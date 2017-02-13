@@ -1,0 +1,6 @@
+hash: df02a935528f8d35ef9814e98bfef73e6164d4b50815e80fac63ba56c6869e18
+updated: 2017-02-13T09:59:46.831482781+09:00
+imports:
+- name: github.com/go-ole/go-ole
+  version: de8695c8edbf8236f30d6e1376e20b198a028d42
+testImports: []
