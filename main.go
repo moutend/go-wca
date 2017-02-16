@@ -21,4 +21,11 @@ func main() {
 	}
 	defer me.Release()
 	fmt.Println("@@@2")
+	var dc *IMMDeviceCollection
+	err = me.EnumAudioEndpoints(ERender, DEVICE_STATE_ACTIVE, &dc)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("@@@3")
 }
