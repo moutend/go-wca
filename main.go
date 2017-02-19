@@ -28,4 +28,10 @@ func main() {
 		return
 	}
 	fmt.Println("@@@3")
+	var count uint32
+	err = dc.GetCount(&count)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(count)
 }

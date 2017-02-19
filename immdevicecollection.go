@@ -19,3 +19,8 @@ type IMMDeviceCollectionVtbl struct {
 func (v *IMMDeviceCollection) VTable() *IMMDeviceCollectionVtbl {
 	return (*IMMDeviceCollectionVtbl)(unsafe.Pointer(v.RawVTable))
 }
+
+func (v *IMMDeviceCollection) GetCount(count *uint32) (err error) {
+	err = getCount(v, count)
+	return
+}
