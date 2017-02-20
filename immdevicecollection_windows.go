@@ -27,7 +27,7 @@ func item(dc *IMMDeviceCollection, id uint32, mmd **IMMDevice) (err error) {
 		dc.VTable().Item,
 		3,
 		uintptr(unsafe.Pointer(dc)),
-		uintptr(unsafe.Pointer(&id)),
+		uintptr(id),
 		uintptr(unsafe.Pointer(mmd)))
 	if hr != 0 {
 		err = ole.NewError(hr)
