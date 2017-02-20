@@ -34,4 +34,5 @@ func main() {
 		fmt.Println(err)
 	}
 	fmt.Println(count)
+	err = dc.GetId
 }

@@ -24,3 +24,8 @@ func (v *IMMDeviceCollection) GetCount(count *uint32) (err error) {
 	err = getCount(v, count)
 	return
 }
+
+func (v *IMMDeviceCollection) Item(id uint32) (err error) {
+	err = item(v, id)
+	return
+}
