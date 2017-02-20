@@ -34,5 +34,11 @@ func main() {
 		fmt.Println(err)
 	}
 	fmt.Println(count)
-	err = dc.GetId
+	var mmd *IMMDevice
+	err = dc.Item(count-1, &mmd)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("@@@4")
 }

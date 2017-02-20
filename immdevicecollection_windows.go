@@ -22,13 +22,13 @@ func getCount(dc *IMMDeviceCollection, count *uint32) (err error) {
 	return
 }
 
-func item(dc *IMMDeviceCollection, id uint32) (err error) {
+func item(dc *IMMDeviceCollection, id uint32, mmd **IMMDevice) (err error) {
 	hr, _, _ := syscall.Syscall(
 		dc.VTable().Item,
-		2,
+		3,
 		uintptr(unsafe.Pointer(dc)),
 		uintptr(unsafe.Pointer(&id)),
-		0)
+		uintptr(unsafe.Pointer(mmd)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
