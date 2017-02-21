@@ -23,7 +23,7 @@ func (v *IMMDeviceEnumerator) VTable() *IMMDeviceEnumeratorVtbl {
 	return (*IMMDeviceEnumeratorVtbl)(unsafe.Pointer(v.RawVTable))
 }
 
-func (v *IMMDeviceEnumerator) EnumAudioEndpoints(eDataFlow uint32, stateMask uint32, dc **IMMDeviceCollection) (err error) {
+func (v *IMMDeviceEnumerator) EnumAudioEndpoints(eDataFlow, stateMask uint32, dc **IMMDeviceCollection) (err error) {
 	err = enumAudioEndpoints(v, eDataFlow, stateMask, dc)
 	return
 }
