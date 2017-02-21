@@ -13,9 +13,9 @@ type IMMDevice struct {
 type IMMDeviceVtbl struct {
 	ole.IUnknownVtbl
 	Activate          uintptr
+	OpenPropertyStore uintptr
 	GetId             uintptr
 	GetState          uintptr
-	OpenPropertyStore uintptr
 }
 
 func (v *IMMDevice) VTable() *IMMDeviceVtbl {
@@ -24,5 +24,10 @@ func (v *IMMDevice) VTable() *IMMDeviceVtbl {
 
 func (v *IMMDevice) GetId(strId *uint16) (err error) {
 	err = getId(v, strId)
+	return
+}
+
+func (v *IMMDevice) GetState(state *uint32) (err error) {
+	err = getState(v, state)
 	return
 }
