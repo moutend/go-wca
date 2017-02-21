@@ -22,7 +22,7 @@ func (v *IMMDevice) VTable() *IMMDeviceVtbl {
 	return (*IMMDeviceVtbl)(unsafe.Pointer(v.RawVTable))
 }
 
-func (v *IMMDevice) GetId(id **uint16) (err error) {
-	err = getId(v, id)
+func (v *IMMDevice) GetId(strId *uint16) (err error) {
+	err = getId(v, strId)
 	return
 }

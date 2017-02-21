@@ -41,4 +41,11 @@ func main() {
 		return
 	}
 	fmt.Println("@@@4")
+	var strId uint16
+	err = mmd.GetId(&strId)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("@@@5")
 }
