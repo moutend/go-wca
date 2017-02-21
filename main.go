@@ -33,19 +33,20 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(count)
-	var mmd *IMMDevice
-	err = dc.Item(count-1, &mmd)
-	if err != nil {
-		fmt.Println(err)
-		return
+	for i := 0; i < int(count); i++ {
+		var mmd *IMMDevice
+		err = dc.Item(uint32(i), &mmd)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		var state uint32
+		err = mmd.GetState(&state)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(i, state, StringifyState(state))
 	}
-	fmt.Println("@@@4")
-	var strId uint16
-	err = mmd.GetId(&strId)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println("@@@5")
+	return
 }

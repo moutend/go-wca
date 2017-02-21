@@ -21,3 +21,16 @@ func getId(mmd *IMMDevice, strId *uint16) (err error) {
 	}
 	return
 }
+
+func getState(mmd *IMMDevice, state *uint32) (err error) {
+	hr, _, _ := syscall.Syscall(
+		mmd.VTable().GetState,
+		2,
+		uintptr(unsafe.Pointer(mmd)),
+		uintptr(unsafe.Pointer(state)),
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
