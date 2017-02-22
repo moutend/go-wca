@@ -3,11 +3,29 @@
 package main
 
 import (
+	"reflect"
 	"syscall"
 	"unsafe"
 
 	"github.com/go-ole/go-ole"
 )
+
+func activate(mmd *IMMDevice, refIID *ole.GUID, ctx uint32, prop, obj interface{}) (err error) {
+	objValue := reflect.ValueOf(obj).Elem()
+	hr, _, _ := syscall.Syscall6(
+		mmd.VTable().Activate,
+		5,
+		uintptr(unsafe.Pointer(mmd)),
+		uintptr(unsafe.Pointer(refIID)),
+		uintptr(unsafe.Pointer(&ctx)),
+		0,
+		objValue.Addr().Pointer(),
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
 
 func getId(mmd *IMMDevice, strId *uint16) (err error) {
 	hr, _, _ := syscall.Syscall(
