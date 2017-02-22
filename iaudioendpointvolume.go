@@ -40,3 +40,17 @@ func (v *IAudioEndpointVolume) GetChannelCount(channelCount *uint32) (err error)
 	err = getChannelCount(v, channelCount)
 	return
 }
+func (v *IAudioEndpointVolume) GetMasterVolumeLevelScalar(level *float32) (err error) {
+	err = getMasterVolumeLevelScalar(v, level)
+	return
+}
+
+func (v *IAudioEndpointVolume) SetMasterVolumeLevelScalar(level float32, eventContextGUID *ole.GUID) (err error) {
+	err = setMasterVolumeLevelScalar(v, level, eventContextGUID)
+	return
+}
+
+func (v *IAudioEndpointVolume) VolumeStepUp(eventContextGUID *ole.GUID) (err error) {
+	err = volumeStepUp(v, eventContextGUID)
+	return
+}
