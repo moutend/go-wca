@@ -73,7 +73,9 @@ func (v *IAudioEndpointVolume) SetChannelVolumeLevelScalar() {
 func (v *IAudioEndpointVolume) GetChannelVolumeLevel() {
 	return
 }
-func (v *IAudioEndpointVolume) GetChannelVolumeLevelScalar() {
+
+func (v *IAudioEndpointVolume) GetChannelVolumeLevelScalar(channel uint32, level *float32) (err error) {
+	err = getChannelVolumeLevelScalar(v, channel, level)
 	return
 }
 
