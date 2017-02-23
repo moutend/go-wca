@@ -82,7 +82,8 @@ func (v *IAudioEndpointVolume) SetMute() {
 func (v *IAudioEndpointVolume) GetMute() {
 	return
 }
-func (v *IAudioEndpointVolume) GetVolumeStepInfo() {
+func (v *IAudioEndpointVolume) GetVolumeStepInfo(step, stepCount *uint32) (err error) {
+	err = getVolumeStepInfo(v, step, stepCount)
 	return
 }
 

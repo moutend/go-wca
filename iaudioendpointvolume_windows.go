@@ -46,6 +46,19 @@ func setMasterVolumeLevelScalar(aev *IAudioEndpointVolume, level float32, eventC
 	return
 }
 
+func getVolumeStepInfo(aev *IAudioEndpointVolume, step, stepCount *uint32) (err error) {
+	hr, _, _ := syscall.Syscall(
+		aev.VTable().GetVolumeStepInfo,
+		3,
+		uintptr(unsafe.Pointer(aev)),
+		uintptr(unsafe.Pointer(step)),
+		uintptr(unsafe.Pointer(stepCount)))
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
 func volumeStepUp(aev *IAudioEndpointVolume, eventContextGUID *ole.GUID) (err error) {
 	hr, _, _ := syscall.Syscall(
 		aev.VTable().VolumeStepUp,

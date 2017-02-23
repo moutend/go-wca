@@ -83,9 +83,9 @@ func run() (err error) {
 	}
 	fmt.Println("Volume step down")
 
-	if err = aev.SetMasterVolumeLevelScalar(level, nil); err != nil {
-		return
-	}
+	//if err = aev.SetMasterVolumeLevelScalar(level, nil); err != nil {
+	//	return
+	//}
 	var minDB float32
 	var maxDB float32
 	var incrementDB float32
@@ -93,6 +93,12 @@ func run() (err error) {
 		return
 	}
 	fmt.Printf("%f to %f (step: %f)\n", minDB, maxDB, incrementDB)
+	var step uint32
+	var stepCount uint32
+	if err = aev.GetVolumeStepInfo(&step, &stepCount); err != nil {
+		return
+	}
+	fmt.Println(step, stepCount)
 	fmt.Println("done")
 	return
 }
