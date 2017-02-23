@@ -39,7 +39,7 @@ func setMasterVolumeLevelScalar(aev *IAudioEndpointVolume, level float32, eventC
 		3,
 		uintptr(unsafe.Pointer(aev)),
 		uintptr(unsafe.Pointer(&level)),
-		uintptr(unsafe.Pointer(eventContextGUID)))
+		0) //uintptr(unsafe.Pointer(eventContextGUID)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
@@ -52,6 +52,48 @@ func volumeStepUp(aev *IAudioEndpointVolume, eventContextGUID *ole.GUID) (err er
 		2,
 		uintptr(unsafe.Pointer(aev)),
 		uintptr(unsafe.Pointer(eventContextGUID)),
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
+func volumeStepDown(aev *IAudioEndpointVolume, eventContextGUID *ole.GUID) (err error) {
+	hr, _, _ := syscall.Syscall(
+		aev.VTable().VolumeStepDown,
+		2,
+		uintptr(unsafe.Pointer(aev)),
+		uintptr(unsafe.Pointer(eventContextGUID)),
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
+func getVolumeRange(aev *IAudioEndpointVolume, minDB, maxDB, incrementDB *float32) (err error) {
+	hr, _, _ := syscall.Syscall6(
+		aev.VTable().GetVolumeRange,
+		4,
+		uintptr(unsafe.Pointer(aev)),
+		uintptr(unsafe.Pointer(minDB)),
+		uintptr(unsafe.Pointer(maxDB)),
+		uintptr(unsafe.Pointer(incrementDB)),
+		0,
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
+func queryHardwareSupport(aev *IAudioEndpointVolume, hardwareSupportMask *uint32) (err error) {
+	hr, _, _ := syscall.Syscall(
+		aev.VTable().QueryHardwareSupport,
+		2,
+		uintptr(unsafe.Pointer(aev)),
+		uintptr(unsafe.Pointer(hardwareSupportMask)),
 		0)
 	if hr != 0 {
 		err = ole.NewError(hr)

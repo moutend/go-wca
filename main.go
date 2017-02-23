@@ -74,8 +74,25 @@ func run() (err error) {
 	fmt.Printf("current volume is %f\n", level)
 	level = 0.5
 	if err = aev.VolumeStepUp(nil); err != nil {
-  return
-  }
-	fmt.Println("VolumeStepUp")
+		return
+	}
+	fmt.Println("Volume step up")
+
+	if err = aev.VolumeStepDown(nil); err != nil {
+		return
+	}
+	fmt.Println("Volume step down")
+
+	if err = aev.SetMasterVolumeLevelScalar(level, nil); err != nil {
+		return
+	}
+	var minDB float32
+	var maxDB float32
+	var incrementDB float32
+	if err = aev.GetVolumeRange(&minDB, &maxDB, &incrementDB); err != nil {
+		return
+	}
+	fmt.Printf("%f to %f (step: %f)\n", minDB, maxDB, incrementDB)
+	fmt.Println("done")
 	return
 }
