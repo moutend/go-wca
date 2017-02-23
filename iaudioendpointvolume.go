@@ -76,12 +76,17 @@ func (v *IAudioEndpointVolume) GetChannelVolumeLevel() {
 func (v *IAudioEndpointVolume) GetChannelVolumeLevelScalar() {
 	return
 }
-func (v *IAudioEndpointVolume) SetMute() {
+
+func (v *IAudioEndpointVolume) SetMute(mute bool, eventContextGUID *ole.GUID) (err error) {
+	err = setMute(v, mute, eventContextGUID)
 	return
 }
-func (v *IAudioEndpointVolume) GetMute() {
+
+func (v *IAudioEndpointVolume) GetMute(mute *bool) (err error) {
+	err = getMute(v, mute)
 	return
 }
+
 func (v *IAudioEndpointVolume) GetVolumeStepInfo(step, stepCount *uint32) (err error) {
 	err = getVolumeStepInfo(v, step, stepCount)
 	return

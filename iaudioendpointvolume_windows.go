@@ -38,8 +38,34 @@ func setMasterVolumeLevelScalar(aev *IAudioEndpointVolume, level float32, eventC
 		aev.VTable().SetMasterVolumeLevelScalar,
 		3,
 		uintptr(unsafe.Pointer(aev)),
-		uintptr(unsafe.Pointer(&level)),
+    uintptr(level),
 		0) //uintptr(unsafe.Pointer(eventContextGUID)))
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
+func setMute(aev *IAudioEndpointVolume, mute bool, eventContextGUID *ole.GUID) (err error) {
+	hr, _, _ := syscall.Syscall(
+		aev.VTable().GetMute,
+		3,
+		uintptr(unsafe.Pointer(aev)),
+		uintptr(unsafe.Pointer(&mute)),
+		uintptr(unsafe.Pointer(eventContextGUID)))
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
+func getMute(aev *IAudioEndpointVolume, mute *bool) (err error) {
+	hr, _, _ := syscall.Syscall(
+		aev.VTable().GetMute,
+		2,
+		uintptr(unsafe.Pointer(aev)),
+		uintptr(unsafe.Pointer(mute)),
+		0)
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
