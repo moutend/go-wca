@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/go-ole/go-ole"
+)
+
 type PropertyKey struct {
 	ole.GUID
 	PID uint32
