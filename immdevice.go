@@ -27,7 +27,7 @@ func (v *IMMDevice) Activate(refIID *ole.GUID, ctx uint32, param, obj interface{
 	return
 }
 
-func (v *IMMDevice) GetId(strId *uint16) (err error) {
+func (v *IMMDevice) GetId(strId *uint32) (err error) {
 	err = getId(v, strId)
 	return
 }

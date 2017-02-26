@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"syscall"
+	"unsafe"
 
 	"github.com/go-ole/go-ole"
 )
@@ -46,58 +48,24 @@ func run() (err error) {
 	}
 	defer mmd.Release()
 
-	var state uint32
-	err = mmd.GetState(&state)
-	if err != nil {
+	var strId uint32
+	if err = mmd.GetId(&strId); err != nil {
 		return
 	}
-	fmt.Printf("%d is %s\n", count-1, StringifyState(state))
-
-	var aev *IAudioEndpointVolume
-	if err = mmd.Activate(IID_IAudioEndpointVolume, CLSCTX_INPROC_SERVER, nil, &aev); err != nil {
-		return
+	fmt.Println(strId)
+	start := unsafe.Pointer(uintptr(strId))
+	var str []uint16
+	var i int
+	for {
+		item := *(*uint16)(unsafe.Pointer(uintptr(start) + 4*uintptr(i)))
+		if item == 0 {
+			break
+		}
+		str = append(str, item)
+		fmt.Printf("%d ", item)
+		i += 1
 	}
-	defer aev.Release()
-	fmt.Println("@@@@")
-
-	var channelCount uint32
-	if err = aev.GetChannelCount(&channelCount); err != nil {
-		return
-	}
-	fmt.Printf("device has %d channels\n", channelCount)
-
-	var level float32
-	level = -1.234
-	if err = aev.GetMasterVolumeLevelScalar(&level); err != nil {
-		return
-	}
-	fmt.Printf("current volume is %f\n", level)
-	level = 0.4
-	if err = aev.SetMasterVolumeLevelScalar(level, nil); err != nil {
-		return
-	}
-	fmt.Println("volume set")
-	mute := true
-	if err = aev.GetMute(&mute); err != nil {
-		return
-	}
-	fmt.Println("mute is ", mute)
-	if mute {
-		mute = false
-	} else {
-		mute = true
-	}
-	if err = aev.SetMute(mute, nil); err != nil {
-		return
-	}
-	fmt.Println("toggle mute")
-	return
-	mute = true
-	if err = aev.SetMute(mute, nil); err != nil {
-		return
-	}
-	fmt.Println("enable mute")
-
-	fmt.Println("done")
+	fmt.Printf("\n")
+	fmt.Println(syscall.UTF16ToString(str))
 	return
 }

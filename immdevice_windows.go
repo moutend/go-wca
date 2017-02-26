@@ -27,7 +27,7 @@ func activate(mmd *IMMDevice, refIID *ole.GUID, ctx uint32, prop, obj interface{
 	return
 }
 
-func getId(mmd *IMMDevice, strId *uint16) (err error) {
+func getId(mmd *IMMDevice, strId *uint32) (err error) {
 	hr, _, _ := syscall.Syscall(
 		mmd.VTable().GetId,
 		2,

@@ -69,7 +69,7 @@ func setMute(aev *IAudioEndpointVolume, mute bool, eventContextGUID *ole.GUID) (
 		aev.VTable().SetMute,
 		3,
 		uintptr(unsafe.Pointer(aev)),
-    uintptr(muteValue),
+		uintptr(muteValue),
 		uintptr(unsafe.Pointer(eventContextGUID)))
 	if hr != 0 {
 		err = ole.NewError(hr)
