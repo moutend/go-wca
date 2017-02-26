@@ -27,8 +27,8 @@ func (v *IMMDevice) Activate(refIID *ole.GUID, ctx uint32, param, obj interface{
 	return
 }
 
-func (v *IMMDevice) OpenPropertyStore(refIID *ole.GUID, ctx uint32, param, obj interface{}) (err error) {
-	err = openPropertyStore(v, refIID, ctx, param, obj)
+func (v *IMMDevice) OpenPropertyStore(storageMode uint32, ip *IPropertyStore) (err error) {
+	err = openPropertyStore(v, storageMode, ip)
 	return
 }
 
