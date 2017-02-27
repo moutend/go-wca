@@ -22,3 +22,8 @@ type IPropertyStoreVtbl struct {
 func (v *IPropertyStore) VTable() *IPropertyStoreVtbl {
 	return (*IPropertyStoreVtbl)(unsafe.Pointer(v.RawVTable))
 }
+
+func (v *IPropertyStore) GetValue(key *PropertyKey, pv *PROPVARIANT) (err error) {
+	err = getValue(v, key, pv)
+	return
+}

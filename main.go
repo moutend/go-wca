@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"syscall"
-	"unsafe"
+	//"syscall"
+	//"unsafe"
 
 	"github.com/go-ole/go-ole"
 )
@@ -48,27 +48,11 @@ func run() (err error) {
 	}
 	defer mmd.Release()
 
-	var strId uint32
-	if err = mmd.GetId(&strId); err != nil {
+	var ps *IPropertyStore
+	if err = mmd.OpenPropertyStore(STGM_READ, ps); err != nil {
 		return
 	}
-	fmt.Println(strId)
-	start := unsafe.Pointer(uintptr(strId))
-	var str []uint16
-	var i int
-	for {
-		item := *(*uint16)(unsafe.Pointer(uintptr(start) + 4*uintptr(i)))
-		if item == 0 {
-			break
-		}
-		str = append(str, item)
-		fmt.Printf("%d ", item)
-		i += 1
-	}
-	fmt.Printf("\n")
-	fmt.Println(syscall.UTF16ToString(str))
+	defer ps.Release()
 
-	PKEY_Device_FriendlyName := DefinePropertyKey(0xa45c254e, 0xdf1c, 0x4efd, 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0, 14)
-	fmt.Println(PKEY_Device_FriendlyName)
 	return
 }
