@@ -41,7 +41,7 @@ func getValue(ps *IPropertyStore, key *PropertyKey, pv *PROPVARIANT) (err error)
 		3,
 		uintptr(unsafe.Pointer(ps)),
 		uintptr(unsafe.Pointer(key)),
-		uintptr(unsafe.Pointer(&pv)))
+		uintptr(unsafe.Pointer(pv)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}

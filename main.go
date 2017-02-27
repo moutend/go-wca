@@ -66,9 +66,8 @@ func run() (err error) {
 	if err = ps.GetAt(0, &pk); err != nil {
 		return
 	}
-	fmt.Println(pk)
-	var pv *PROPVARIANT
-	if err = ps.GetValue(&pk, pv); err != nil {
+	var pv PROPVARIANT
+	if err = ps.GetValue(&pk, &pv); err != nil {
 		return
 	}
 	fmt.Println(pv)
