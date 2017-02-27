@@ -27,13 +27,13 @@ func activate(mmd *IMMDevice, refIID *ole.GUID, ctx uint32, prop, obj interface{
 	return
 }
 
-func openPropertyStore(mmd *IMMDevice, storageMode uint32, ip *IPropertyStore) (err error) {
+func openPropertyStore(mmd *IMMDevice, storageMode uint32, ps **IPropertyStore) (err error) {
 	hr, _, _ := syscall.Syscall(
 		mmd.VTable().OpenPropertyStore,
 		3,
 		uintptr(unsafe.Pointer(mmd)),
-		uintptr(unsafe.Pointer(&storageMode)),
-		uintptr(unsafe.Pointer(ip)))
+		uintptr(storageMode),
+		uintptr(unsafe.Pointer(ps)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
