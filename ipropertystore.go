@@ -23,6 +23,11 @@ func (v *IPropertyStore) VTable() *IPropertyStoreVtbl {
 	return (*IPropertyStoreVtbl)(unsafe.Pointer(v.RawVTable))
 }
 
+func (v *IPropertyStore) GetCount(count *uint32) (err error) {
+	err = psGetCount(v, count)
+	return
+}
+
 func (v *IPropertyStore) GetValue(key *PropertyKey, pv *PROPVARIANT) (err error) {
 	err = getValue(v, key, pv)
 	return

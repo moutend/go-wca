@@ -63,6 +63,9 @@ func run() (err error) {
 		return
 	}
 	fmt.Println("@@@")
-	fmt.Println(pv)
+	if err = ps.GetCount(&count); err != nil {
+		return
+	}
+	fmt.Println(count)
 	return
 }
