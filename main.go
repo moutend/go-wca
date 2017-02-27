@@ -62,5 +62,7 @@ func run() (err error) {
 	if err = ps.GetValue(PKEY_Device_FriendlyName, &pv); err != nil {
 		return
 	}
+	fmt.Println("@@@")
+	fmt.Println(pv)
 	return
 }
