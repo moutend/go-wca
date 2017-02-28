@@ -1,4 +1,4 @@
-package main
+package wca
 
 import (
 	"github.com/go-ole/go-ole"

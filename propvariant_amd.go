@@ -1,6 +1,6 @@
 // +build amd64
 
-package main
+package wca
 
 type PROPVARIANT struct {
 	VT         uint16  // 2

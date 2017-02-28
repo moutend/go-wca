@@ -1,4 +1,4 @@
-package main
+package wca
 
 func StringifyState(state uint32) string {
 	switch state {

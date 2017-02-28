@@ -1,4 +1,4 @@
-package main
+package wca
 
 const (
 	DEVICE_STATE_ACTIVE     = 0x00000001
