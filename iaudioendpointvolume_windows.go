@@ -158,6 +158,19 @@ func aevVolumeStepDown(aev *IAudioEndpointVolume, eventContextGUID *ole.GUID) (e
 	return
 }
 
+func aevQueryHardwareSupport(aev *IAudioEndpointVolume, hardwareSupportMask *uint32) (err error) {
+	hr, _, _ := syscall.Syscall(
+		aev.VTable().QueryHardwareSupport,
+		2,
+		uintptr(unsafe.Pointer(aev)),
+		uintptr(unsafe.Pointer(hardwareSupportMask)),
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
 func aevGetVolumeRange(aev *IAudioEndpointVolume, minDB, maxDB, incrementDB *float32) (err error) {
 	hr, _, _ := syscall.Syscall6(
 		aev.VTable().GetVolumeRange,
@@ -167,19 +180,6 @@ func aevGetVolumeRange(aev *IAudioEndpointVolume, minDB, maxDB, incrementDB *flo
 		uintptr(unsafe.Pointer(maxDB)),
 		uintptr(unsafe.Pointer(incrementDB)),
 		0,
-		0)
-	if hr != 0 {
-		err = ole.NewError(hr)
-	}
-	return
-}
-
-func aevQueryHardwareSupport(aev *IAudioEndpointVolume, hardwareSupportMask *uint32) (err error) {
-	hr, _, _ := syscall.Syscall(
-		aev.VTable().QueryHardwareSupport,
-		2,
-		uintptr(unsafe.Pointer(aev)),
-		uintptr(unsafe.Pointer(hardwareSupportMask)),
 		0)
 	if hr != 0 {
 		err = ole.NewError(hr)
