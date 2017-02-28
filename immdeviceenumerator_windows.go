@@ -24,3 +24,19 @@ func mmdeEnumAudioEndpoints(de *IMMDeviceEnumerator, eDataFlow, stateMask uint32
 	}
 	return
 }
+
+func mmdeGetDefaultAudioEndpoint() (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
+
+func mmdeGetDevice() (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
+
+func mmdeRegisterEndpointNotificationCallback() (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
+
+func mmdeUnregisterEndpointNotificationCallback() (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}

@@ -27,3 +27,23 @@ func (v *IMMDeviceEnumerator) EnumAudioEndpoints(eDataFlow, stateMask uint32, dc
 	err = mmdeEnumAudioEndpoints(v, eDataFlow, stateMask, dc)
 	return
 }
+
+func (v *IMMDeviceEnumerator) GetDefaultAudioEndpoint() (err error) {
+	err = mmdeGetDefaultAudioEndpoint()
+	return
+}
+
+func (v *IMMDeviceEnumerator) GetDevice() (err error) {
+	err = mmdeGetDevice()
+	return
+}
+
+func (v *IMMDeviceEnumerator) RegisterEndpointNotificationCallback() (err error) {
+	err = mmdeRegisterEndpointNotificationCallback()
+	return
+}
+
+func (v *IMMDeviceEnumerator) UnregisterEndpointNotificationCallback() (err error) {
+	err = mmdeUnregisterEndpointNotificationCallback()
+	return
+}
