@@ -3,9 +3,6 @@
 package main
 
 import (
-	"syscall"
-	"unsafe"
-
 	"github.com/go-ole/go-ole"
 )
 
