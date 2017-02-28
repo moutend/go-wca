@@ -24,6 +24,6 @@ func (v *IMMDeviceEnumerator) VTable() *IMMDeviceEnumeratorVtbl {
 }
 
 func (v *IMMDeviceEnumerator) EnumAudioEndpoints(eDataFlow, stateMask uint32, dc **IMMDeviceCollection) (err error) {
-	err = enumAudioEndpoints(v, eDataFlow, stateMask, dc)
+	err = mmdeEnumAudioEndpoints(v, eDataFlow, stateMask, dc)
 	return
 }

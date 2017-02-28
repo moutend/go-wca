@@ -9,7 +9,7 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
-func enumAudioEndpoints(de *IMMDeviceEnumerator, eDataFlow, stateMask uint32, dc **IMMDeviceCollection) (err error) {
+func mmdeEnumAudioEndpoints(de *IMMDeviceEnumerator, eDataFlow, stateMask uint32, dc **IMMDeviceCollection) (err error) {
 	hr, _, _ := syscall.Syscall6(
 		de.VTable().EnumAudioEndpoints,
 		4,
