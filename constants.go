@@ -6,13 +6,19 @@ const (
 	DEVICE_STATE_NOTPRESENT = 0x00000004
 	DEVICE_STATE_UNPLUGGED  = 0x00000008
 	DEVICE_STATEMASK_ALL    = 0x0000000F
-	ERender                 = 0x0
-	ECapture                = 0x1
-	EAll                    = 0x2
-	EDataFlow_enum_count    = 0x3
-	STGM_READ               = 0x0
-	STGM_WRITE              = 0x1
-	STGM_READ_WRITE         = 0x2
+)
+
+const (
+	ERender              = 0x0
+	ECapture             = 0x1
+	EAll                 = 0x2
+	EDataFlow_enum_count = 0x3
+)
+
+const (
+	STGM_READ       = 0x0
+	STGM_WRITE      = 0x1
+	STGM_READ_WRITE = 0x2
 )
 
 const (
