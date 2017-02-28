@@ -37,79 +37,88 @@ func (v *IAudioEndpointVolume) VTable() *IAudioEndpointVolumeVtbl {
 }
 
 func (v *IAudioEndpointVolume) RegisterControlChangeNotify() {
+	aevRegisterControlChangeNotify()
 	return
 }
 func (v *IAudioEndpointVolume) UnregisterControlChangeNotify() {
+	aevUnregisterControlChangeNotify()
 	return
 }
 
 func (v *IAudioEndpointVolume) GetChannelCount(channelCount *uint32) (err error) {
-	err = getChannelCount(v, channelCount)
+	err = aevGetChannelCount(v, channelCount)
 	return
 }
 
 func (v *IAudioEndpointVolume) SetMasterVolumeLevel() {
+	aevSetMasterVolumeLevel()
 	return
 }
 
 func (v *IAudioEndpointVolume) SetMasterVolumeLevelScalar(level float32, eventContextGUID *ole.GUID) (err error) {
-	err = setMasterVolumeLevelScalar(v, level, eventContextGUID)
+	err = aevSetMasterVolumeLevelScalar(v, level, eventContextGUID)
 	return
 }
 
 func (v *IAudioEndpointVolume) GetMasterVolumeLevel() {
+	aevGetMasterVolumeLevel()
 	return
 }
+
 func (v *IAudioEndpointVolume) GetMasterVolumeLevelScalar(level *float32) (err error) {
-	err = getMasterVolumeLevelScalar(v, level)
+	err = aevGetMasterVolumeLevelScalar(v, level)
 	return
 }
 func (v *IAudioEndpointVolume) SetChannelVolumeLevel() {
+	aevSetChannelVolumeLevel()
 	return
 }
 func (v *IAudioEndpointVolume) SetChannelVolumeLevelScalar() {
+	aevSetChannelVolumeLevelScalar()
 	return
 }
+
 func (v *IAudioEndpointVolume) GetChannelVolumeLevel() {
+	aevGetChannelVolumeLevel()
 	return
 }
 
 func (v *IAudioEndpointVolume) GetChannelVolumeLevelScalar(channel uint32, level *float32) (err error) {
-	err = getChannelVolumeLevelScalar(v, channel, level)
+	err = aevGetChannelVolumeLevelScalar(v, channel, level)
 	return
 }
 
 func (v *IAudioEndpointVolume) SetMute(mute bool, eventContextGUID *ole.GUID) (err error) {
-	err = setMute(v, mute, eventContextGUID)
+	err = aevSetMute(v, mute, eventContextGUID)
 	return
 }
 
 func (v *IAudioEndpointVolume) GetMute(mute *bool) (err error) {
-	err = getMute(v, mute)
+	err = aevGetMute(v, mute)
 	return
 }
 
 func (v *IAudioEndpointVolume) GetVolumeStepInfo(step, stepCount *uint32) (err error) {
-	err = getVolumeStepInfo(v, step, stepCount)
+	err = aevGetVolumeStepInfo(v, step, stepCount)
 	return
 }
 
 func (v *IAudioEndpointVolume) VolumeStepUp(eventContextGUID *ole.GUID) (err error) {
-	err = volumeStepUp(v, eventContextGUID)
+	err = aevVolumeStepUp(v, eventContextGUID)
 	return
 }
 
 func (v *IAudioEndpointVolume) VolumeStepDown(eventContextGUID *ole.GUID) (err error) {
-	err = volumeStepDown(v, eventContextGUID)
+	err = aevVolumeStepDown(v, eventContextGUID)
 	return
 }
 
 func (v *IAudioEndpointVolume) QueryHardwareSupport(hardwareSupportMask *uint32) (err error) {
-	err = queryHardwareSupport(v, hardwareSupportMask)
+	err = aevQueryHardwareSupport(v, hardwareSupportMask)
 	return
 }
 
 func (v *IAudioEndpointVolume) GetVolumeRange(minDB, maxDB, incrementDB *float32) (err error) {
-	err = getVolumeRange(v, minDB, maxDB, incrementDB)
+	err = aevGetVolumeRange(v, minDB, maxDB, incrementDB)
 	return
 }
