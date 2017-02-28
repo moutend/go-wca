@@ -57,19 +57,25 @@ func run() (err error) {
 	defer ps.Release()
 	fmt.Println("@@@")
 
-	//PKEY_Device_FriendlyName := DefinePropertyKey(0xa45c254e, 0xdf1c, 0x4efd, 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0, 14) // DEVPROP_TYPE_STRING
+	//PKEY_Device_FriendlyName := NewPropertyKey(0xa45c254e, 0xdf1c, 0x4efd, 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0, 14) // DEVPROP_TYPE_STRING
 	if err = ps.GetCount(&count); err != nil {
 		return
 	}
 	fmt.Println(count)
 	var pk PropertyKey
-	if err = ps.GetAt(0, &pk); err != nil {
-		return
+	for i := 0; i < int(count); i++ {
+		if err = ps.GetAt(uint32(i), &pk); err != nil {
+			return
+		}
+		//pk2 := NewPropertyKey(0xa45c254e, 0xdf1c, 0x4efd, 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0, 14)
+		if pk.PID == 14 {
+			break
+		}
 	}
 	var pv PROPVARIANT
 	if err = ps.GetValue(&pk, &pv); err != nil {
 		return
 	}
-	fmt.Println(pv)
+	fmt.Println("@@@", pv)
 	return
 }

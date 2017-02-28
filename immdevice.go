@@ -23,21 +23,21 @@ func (v *IMMDevice) VTable() *IMMDeviceVtbl {
 }
 
 func (v *IMMDevice) Activate(refIID *ole.GUID, ctx uint32, param, obj interface{}) (err error) {
-	err = activate(v, refIID, ctx, param, obj)
+	err = mmdActivate(v, refIID, ctx, param, obj)
 	return
 }
 
 func (v *IMMDevice) OpenPropertyStore(storageMode uint32, ps **IPropertyStore) (err error) {
-	err = openPropertyStore(v, storageMode, ps)
+	err = mmdOpenPropertyStore(v, storageMode, ps)
 	return
 }
 
 func (v *IMMDevice) GetId(strId *uint32) (err error) {
-	err = getId(v, strId)
+	err = mmdGetId(v, strId)
 	return
 }
 
 func (v *IMMDevice) GetState(state *uint32) (err error) {
-	err = getState(v, state)
+	err = mmdGetState(v, state)
 	return
 }

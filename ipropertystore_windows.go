@@ -35,7 +35,7 @@ func psGetAt(ps *IPropertyStore, index uint32, pk *PropertyKey) (err error) {
 	return
 }
 
-func getValue(ps *IPropertyStore, key *PropertyKey, pv *PROPVARIANT) (err error) {
+func psGetValue(ps *IPropertyStore, key *PropertyKey, pv *PROPVARIANT) (err error) {
 	hr, _, _ := syscall.Syscall(
 		ps.VTable().GetValue,
 		3,

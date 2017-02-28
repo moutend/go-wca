@@ -34,6 +34,14 @@ func (v *IPropertyStore) GetAt(index uint32, pk *PropertyKey) (err error) {
 }
 
 func (v *IPropertyStore) GetValue(key *PropertyKey, pv *PROPVARIANT) (err error) {
-	err = getValue(v, key, pv)
+	err = psGetValue(v, key, pv)
+	return
+}
+
+func (v *IPropertyStore) SetValue() (err error) {
+	return
+}
+
+func (v *IPropertyStore) Commit() (err error) {
 	return
 }
