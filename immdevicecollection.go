@@ -21,11 +21,11 @@ func (v *IMMDeviceCollection) VTable() *IMMDeviceCollectionVtbl {
 }
 
 func (v *IMMDeviceCollection) GetCount(count *uint32) (err error) {
-	err = getCount(v, count)
+	err = mmdcGetCount(v, count)
 	return
 }
 
 func (v *IMMDeviceCollection) Item(id uint32, mmd **IMMDevice) (err error) {
-	err = item(v, id, mmd)
+	err = mmdcItem(v, id, mmd)
 	return
 }

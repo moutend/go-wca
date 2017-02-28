@@ -3,10 +3,6 @@
 package main
 
 import (
-	"reflect"
-	"syscall"
-	"unsafe"
-
 	"github.com/go-ole/go-ole"
 )
 

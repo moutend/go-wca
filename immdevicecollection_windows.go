@@ -9,7 +9,7 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
-func getCount(dc *IMMDeviceCollection, count *uint32) (err error) {
+func mmdcGetCount(dc *IMMDeviceCollection, count *uint32) (err error) {
 	hr, _, _ := syscall.Syscall(
 		dc.VTable().GetCount,
 		2,
@@ -22,7 +22,7 @@ func getCount(dc *IMMDeviceCollection, count *uint32) (err error) {
 	return
 }
 
-func item(dc *IMMDeviceCollection, id uint32, mmd **IMMDevice) (err error) {
+func mmdcItem(dc *IMMDeviceCollection, id uint32, mmd **IMMDevice) (err error) {
 	hr, _, _ := syscall.Syscall(
 		dc.VTable().Item,
 		3,
