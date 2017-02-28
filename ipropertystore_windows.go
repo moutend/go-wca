@@ -47,3 +47,11 @@ func psGetValue(ps *IPropertyStore, key *PropertyKey, pv *PROPVARIANT) (err erro
 	}
 	return
 }
+
+func psSetValue() (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
+
+func psCommit() (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}

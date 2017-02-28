@@ -39,9 +39,11 @@ func (v *IPropertyStore) GetValue(key *PropertyKey, pv *PROPVARIANT) (err error)
 }
 
 func (v *IPropertyStore) SetValue() (err error) {
+	err = psSetValue()
 	return
 }
 
 func (v *IPropertyStore) Commit() (err error) {
+	err = psCommit()
 	return
 }
