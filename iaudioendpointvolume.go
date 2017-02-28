@@ -36,12 +36,13 @@ func (v *IAudioEndpointVolume) VTable() *IAudioEndpointVolumeVtbl {
 	return (*IAudioEndpointVolumeVtbl)(unsafe.Pointer(v.RawVTable))
 }
 
-func (v *IAudioEndpointVolume) RegisterControlChangeNotify() {
-	aevRegisterControlChangeNotify()
+func (v *IAudioEndpointVolume) RegisterControlChangeNotify() (err error) {
+	err = aevRegisterControlChangeNotify()
 	return
 }
-func (v *IAudioEndpointVolume) UnregisterControlChangeNotify() {
-	aevUnregisterControlChangeNotify()
+
+func (v *IAudioEndpointVolume) UnregisterControlChangeNotify() (err error) {
+	err = aevUnregisterControlChangeNotify()
 	return
 }
 
@@ -50,8 +51,8 @@ func (v *IAudioEndpointVolume) GetChannelCount(channelCount *uint32) (err error)
 	return
 }
 
-func (v *IAudioEndpointVolume) SetMasterVolumeLevel() {
-	aevSetMasterVolumeLevel()
+func (v *IAudioEndpointVolume) SetMasterVolumeLevel() (err error) {
+	err = aevSetMasterVolumeLevel()
 	return
 }
 
@@ -60,8 +61,8 @@ func (v *IAudioEndpointVolume) SetMasterVolumeLevelScalar(level float32, eventCo
 	return
 }
 
-func (v *IAudioEndpointVolume) GetMasterVolumeLevel() {
-	aevGetMasterVolumeLevel()
+func (v *IAudioEndpointVolume) GetMasterVolumeLevel() (err error) {
+	err = aevGetMasterVolumeLevel()
 	return
 }
 
@@ -69,17 +70,18 @@ func (v *IAudioEndpointVolume) GetMasterVolumeLevelScalar(level *float32) (err e
 	err = aevGetMasterVolumeLevelScalar(v, level)
 	return
 }
-func (v *IAudioEndpointVolume) SetChannelVolumeLevel() {
-	aevSetChannelVolumeLevel()
-	return
-}
-func (v *IAudioEndpointVolume) SetChannelVolumeLevelScalar() {
-	aevSetChannelVolumeLevelScalar()
+func (v *IAudioEndpointVolume) SetChannelVolumeLevel() (err error) {
+	err = aevSetChannelVolumeLevel()
 	return
 }
 
-func (v *IAudioEndpointVolume) GetChannelVolumeLevel() {
-	aevGetChannelVolumeLevel()
+func (v *IAudioEndpointVolume) SetChannelVolumeLevelScalar() (err error) {
+	err = aevSetChannelVolumeLevelScalar()
+	return
+}
+
+func (v *IAudioEndpointVolume) GetChannelVolumeLevel() (err error) {
+	err = aevGetChannelVolumeLevel()
 	return
 }
 
