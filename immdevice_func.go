@@ -14,7 +14,7 @@ func mmdOpenPropertyStore(mmd *IMMDevice, storageMode uint32, ps **IPropertyStor
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func mmdGetId(mmd *IMMDevice, strId *uint32) (err error) {
+func mmdGetId(mmd *IMMDevice, strId *string) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 

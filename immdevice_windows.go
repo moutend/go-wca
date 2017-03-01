@@ -40,16 +40,32 @@ func mmdOpenPropertyStore(mmd *IMMDevice, storageMode uint32, ps **IPropertyStor
 	return
 }
 
-func mmdGetId(mmd *IMMDevice, strId *uint32) (err error) {
+func mmdGetId(mmd *IMMDevice, strId *string) (err error) {
+	var strIdPtr uint32
 	hr, _, _ := syscall.Syscall(
 		mmd.VTable().GetId,
 		2,
 		uintptr(unsafe.Pointer(mmd)),
-		uintptr(unsafe.Pointer(strId)),
+		uintptr(unsafe.Pointer(&strIdPtr)),
 		0)
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
+	// According to the MSDN document, an endpoint ID string is a null-terminated wide-character string.
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/dd370837(v=vs.85).aspx
+	var us []uint16
+	var i uint32
+	var start = unsafe.Pointer(uintptr(strIdPtr))
+	for {
+		u := *(*uint16)(unsafe.Pointer(uintptr(start) + 2*uintptr(i)))
+		if u == 0 {
+			break
+		}
+		us = append(us, u)
+		i++
+	}
+	*strId = syscall.UTF16ToString(us)
+	ole.CoTaskMemFree(uintptr(strIdPtr))
 	return
 }
 

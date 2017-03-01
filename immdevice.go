@@ -32,7 +32,7 @@ func (v *IMMDevice) OpenPropertyStore(storageMode uint32, ps **IPropertyStore) (
 	return
 }
 
-func (v *IMMDevice) GetId(strId *uint32) (err error) {
+func (v *IMMDevice) GetId(strId *string) (err error) {
 	err = mmdGetId(v, strId)
 	return
 }
