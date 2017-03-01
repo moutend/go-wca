@@ -18,7 +18,7 @@ func aevGetChannelCount(aev *IAudioEndpointVolume, channelCount *uint32) (err er
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func aevSetMasterVolumeLevel() (err error) {
+func aevSetMasterVolumeLevel(aev *IAudioEndpointVolume, levelDB float32, eventContextGUID *ole.GUID) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
@@ -26,7 +26,7 @@ func aevSetMasterVolumeLevelScalar(aev *IAudioEndpointVolume, level float32, eve
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func aevGetMasterVolumeLevel() (err error) {
+func aevGetMasterVolumeLevel(aev *IAudioEndpointVolume, level *float32) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
@@ -34,15 +34,15 @@ func aevGetMasterVolumeLevelScalar(aev *IAudioEndpointVolume, level *float32) (e
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func aevSetChannelVolumeLevel() (err error) {
+func aevSetChannelVolumeLevel(aev *IAudioEndpointVolume, channel uint32, levelDB float32, eventContextGUID *ole.GUID) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func aevSetChannelVolumeLevelScalar() (err error) {
+func aevSetChannelVolumeLevelScalar(aev *IAudioEndpointVolume, channel uint32, level float32, eventContextGUID *ole.GUID) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func aevGetChannelVolumeLevel() (err error) {
+func aevGetChannelVolumeLevel(aev *IAudioEndpointVolume, channel uint32, levelDB *float32) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
