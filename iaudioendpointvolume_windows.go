@@ -30,8 +30,17 @@ func aevGetChannelCount(aev *IAudioEndpointVolume, channelCount *uint32) (err er
 	return
 }
 
-func aevSetMasterVolumeLevel() (err error) {
-	return ole.NewError(ole.E_NOTIMPL)
+func aevSetMasterVolumeLevel(aev *IAudioEndpointVolume, levelDB float32, eventContextGUID *ole.GUID) (err error) {
+	hr, _, _ := syscall.Syscall(
+		aev.VTable().SetMasterVolumeLevel,
+		3,
+		uintptr(unsafe.Pointer(aev)),
+		uintptr(levelDB),
+		uintptr(unsafe.Pointer(eventContextGUID)))
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
 }
 
 func aevSetMasterVolumeLevelScalar(aev *IAudioEndpointVolume, level float32, eventContextGUID *ole.GUID) (err error) {
@@ -47,8 +56,17 @@ func aevSetMasterVolumeLevelScalar(aev *IAudioEndpointVolume, level float32, eve
 	return
 }
 
-func aevGetMasterVolumeLevel() (err error) {
-	return ole.NewError(ole.E_NOTIMPL)
+func aevGetMasterVolumeLevel(aev *IAudioEndpointVolume, level *float32) (err error) {
+	hr, _, _ := syscall.Syscall(
+		aev.VTable().GetMasterVolumeLevel,
+		2,
+		uintptr(unsafe.Pointer(aev)),
+		uintptr(unsafe.Pointer(level)),
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
 }
 
 func aevGetMasterVolumeLevelScalar(aev *IAudioEndpointVolume, level *float32) (err error) {
@@ -64,16 +82,49 @@ func aevGetMasterVolumeLevelScalar(aev *IAudioEndpointVolume, level *float32) (e
 	return
 }
 
-func aevSetChannelVolumeLevel() (err error) {
-	return ole.NewError(ole.E_NOTIMPL)
+func aevSetChannelVolumeLevel(aev *IAudioEndpointVolume, channel uint32, levelDB float32, eventContextGUID *ole.GUID) (err error) {
+	hr, _, _ := syscall.Syscall6(
+		aev.VTable().SetChannelVolumeLevel,
+		4,
+		uintptr(unsafe.Pointer(aev)),
+		uintptr(channel),
+		uintptr(levelDB),
+		uintptr(unsafe.Pointer(eventContextGUID)),
+		0,
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
 }
 
-func aevSetChannelVolumeLevelScalar() (err error) {
-	return ole.NewError(ole.E_NOTIMPL)
+func aevSetChannelVolumeLevelScalar(aev *IAudioEndpointVolume, channel uint32, level float32, eventContextGUID *ole.GUID) (err error) {
+	hr, _, _ := syscall.Syscall6(
+		aev.VTable().SetChannelVolumeLevelScalar,
+		4,
+		uintptr(unsafe.Pointer(aev)),
+		uintptr(channel),
+		uintptr(level),
+		uintptr(unsafe.Pointer(eventContextGUID)),
+		0,
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
 }
 
-func aevGetChannelVolumeLevel() (err error) {
-	return ole.NewError(ole.E_NOTIMPL)
+func aevGetChannelVolumeLevel(aev *IAudioEndpointVolume, channel uint32, levelDB *float32) (err error) {
+	hr, _, _ := syscall.Syscall(
+		aev.VTable().GetChannelVolumeLevel,
+		3,
+		uintptr(unsafe.Pointer(aev)),
+		uintptr(channel),
+		uintptr(unsafe.Pointer(levelDB)))
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
 }
 
 func aevGetChannelVolumeLevelScalar(aev *IAudioEndpointVolume, channel uint32, level *float32) (err error) {
