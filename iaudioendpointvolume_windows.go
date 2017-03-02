@@ -132,7 +132,7 @@ func aevGetChannelVolumeLevelScalar(aev *IAudioEndpointVolume, channel uint32, l
 		aev.VTable().GetChannelVolumeLevelScalar,
 		3,
 		uintptr(unsafe.Pointer(aev)),
-		uintptr(unsafe.Pointer(&channel)),
+		uintptr(channel),
 		uintptr(unsafe.Pointer(level)))
 	if hr != 0 {
 		err = ole.NewError(hr)
