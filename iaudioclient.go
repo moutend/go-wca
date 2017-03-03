@@ -29,3 +29,18 @@ type IAudioClientVtbl struct {
 func (v *IAudioClient) VTable() *IAudioClientVtbl {
 	return (*IAudioClientVtbl)(unsafe.Pointer(v.RawVTable))
 }
+
+func (v *IAudioClient) Start() (err error) {
+	err = acStart(v)
+	return
+}
+
+func (v *IAudioClient) Stop() (err error) {
+	err = acStop(v)
+	return
+}
+
+func (v *IAudioClient) Reset() (err error) {
+	err = acReset(v)
+	return
+}
