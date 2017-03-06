@@ -9,6 +9,19 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
+func acGetMixFormat(ac *IAudioClient, wfe **WAVEFORMATEX) (err error) {
+	hr, _, _ := syscall.Syscall(
+		ac.VTable().GetMixFormat,
+		2,
+		uintptr(unsafe.Pointer(ac)),
+		uintptr(unsafe.Pointer(wfe)),
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
 func acStart(ac *IAudioClient) (err error) {
 	hr, _, _ := syscall.Syscall(
 		ac.VTable().Start,

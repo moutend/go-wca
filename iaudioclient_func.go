@@ -6,6 +6,10 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
+func acGetMixFormat(ac *IAudioClient, wfe **WAVEFORMATEX) (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
+
 func acStart(ac *IAudioClient) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }

@@ -30,6 +30,11 @@ func (v *IAudioClient) VTable() *IAudioClientVtbl {
 	return (*IAudioClientVtbl)(unsafe.Pointer(v.RawVTable))
 }
 
+func (v *IAudioClient) GetMixFormat(wfe **WAVEFORMATEX) (err error) {
+	err = acGetMixFormat(v, wfe)
+	return
+}
+
 func (v *IAudioClient) Start() (err error) {
 	err = acStart(v)
 	return
