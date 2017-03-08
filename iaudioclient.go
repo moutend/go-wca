@@ -30,6 +30,16 @@ func (v *IAudioClient) VTable() *IAudioClientVtbl {
 	return (*IAudioClientVtbl)(unsafe.Pointer(v.RawVTable))
 }
 
+func (v *IAudioClient) Initialize(shareMode, streamFlags, bufferDuration, periodicity uint32, format *WAVEFORMATEX, audioSessionGUID *ole.GUID) (err error) {
+	err = acInitialize(v, shareMode, streamFlags, bufferDuration, periodicity, format, audioSessionGUID)
+	return
+}
+
+func (v *IAudioClient) GetBufferSize(bufferFrameSize *uint32) (err error) {
+	err = acGetBufferSize(v, bufferFrameSize)
+	return
+}
+
 func (v *IAudioClient) GetMixFormat(wfe **WAVEFORMATEX) (err error) {
 	err = acGetMixFormat(v, wfe)
 	return
