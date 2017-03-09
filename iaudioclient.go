@@ -59,3 +59,8 @@ func (v *IAudioClient) Reset() (err error) {
 	err = acReset(v)
 	return
 }
+
+func (v *IAudioClient) GetService(refIID *ole.GUID, obj interface{}) (err error) {
+	err = acGetService(v, refIID, obj)
+	return
+}

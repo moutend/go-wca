@@ -3,6 +3,7 @@
 package wca
 
 import (
+	"reflect"
 	"syscall"
 	"unsafe"
 
@@ -87,6 +88,19 @@ func acReset(ac *IAudioClient) (err error) {
 		uintptr(unsafe.Pointer(ac)),
 		0,
 		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+func acGetService(ac *IAudioClient, refIID *ole.GUID, obj interface{}) (err error) {
+	objValue := reflect.ValueOf(obj).Elem()
+	hr, _, _ := syscall.Syscall(
+		ac.VTable().GetService,
+		3,
+		uintptr(unsafe.Pointer(ac)),
+		uintptr(unsafe.Pointer(refIID)),
+		objValue.Addr().Pointer())
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}

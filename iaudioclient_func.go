@@ -29,3 +29,7 @@ func acStop(ac *IAudioClient) (err error) {
 func acReset(ac *IAudioClient) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
+
+func acGetService(ac *IAudioClient, refIID *ole.GUID, obj interface{}) (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
