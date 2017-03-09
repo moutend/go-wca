@@ -1,5 +1,12 @@
 package wca
 
+// The following constants are defined in Audioclient.h.
+const (
+	AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY = 0x1
+	AUDCLNT_BUFFERFLAGS_SILENT             = 0x2
+	AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR    = 0x4
+)
+
 const (
 	AUDCLNT_STREAMFLAGS_CROSSPROCESS        = 0x00010000
 	AUDCLNT_STREAMFLAGS_LOOPBACK            = 0x00020000
