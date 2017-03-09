@@ -14,7 +14,7 @@ func acGetBufferSize(ac *IAudioClient, bufferFrameSize *uint32) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func acGetMixFormat(ac *IAudioClient, wfe **WAVEFORMATEX) (err error) {
+func acGetMixFormat(ac *IAudioClient, wfx **WAVEFORMATEX) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 

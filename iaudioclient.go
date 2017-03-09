@@ -40,7 +40,7 @@ func (v *IAudioClient) GetBufferSize(bufferFrameSize *uint32) (err error) {
 	return
 }
 
-func (v *IAudioClient) GetMixFormat(wfe **WAVEFORMATEX) (err error) {
+func (v *IAudioClient) GetMixFormat(wfx **WAVEFORMATEX) (err error) {
 	err = acGetMixFormat(v, wfe)
 	return
 }

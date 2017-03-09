@@ -42,7 +42,7 @@ func acGetBufferSize(ac *IAudioClient, bufferFrameSize *uint32) (err error) {
 	return
 }
 
-func acGetMixFormat(ac *IAudioClient, wfe **WAVEFORMATEX) (err error) {
+func acGetMixFormat(ac *IAudioClient, wfx **WAVEFORMATEX) (err error) {
 	hr, _, _ := syscall.Syscall(
 		ac.VTable().GetMixFormat,
 		2,
