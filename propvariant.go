@@ -3,7 +3,7 @@ package wca
 import "github.com/go-ole/go-ole"
 
 type PROPVARIANT struct {
-ole.VARIANT
+	ole.VARIANT
 }
 
 func (v PROPVARIANT) String() string {
