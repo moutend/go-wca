@@ -1,5 +1,10 @@
 package wca
 
+const (
+	CREATE_EVENT_INITIAL_SET  = 0x00000002
+	CREATE_EVENT_MANUAL_RESET = 0x00000001
+)
+
 // The following constants are defined in Audioclient.h.
 const (
 	AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY = 0x1
