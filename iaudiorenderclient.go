@@ -20,7 +20,7 @@ func (v *IAudioRenderClient) VTable() *IAudioRenderClientVtbl {
 	return (*IAudioRenderClientVtbl)(unsafe.Pointer(v.RawVTable))
 }
 
-func (v *IAudioRenderClient) GetBuffer(requiredFrameSize uint32, data interface{}) (err error) {
+func (v *IAudioRenderClient) GetBuffer(requiredFrameSize uint32, data **byte) (err error) {
 	err = arcGetBuffer(v, requiredFrameSize, data)
 	return
 }

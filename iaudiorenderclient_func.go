@@ -6,7 +6,7 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
-func arcGetBuffer(arc *IAudioRenderClient, requiredBufferSize uint32, data interface{}) (err error) {
+func arcGetBuffer(arc *IAudioRenderClient, requiredBufferSize uint32, data **byte) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
