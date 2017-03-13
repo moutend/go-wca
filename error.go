@@ -60,7 +60,7 @@ func NewError(hr uintptr) (err error) {
 	case AUDCLNT_E_BUFFER_OPERATION_PENDING:
 		err = fmt.Errorf("buffer cannot be accessed while reset is in progress")
 	case AUDCLNT_E_THREAD_NOT_REGISTERED:
-		err = fmt.Errorf("")
+		err = fmt.Errorf("@@@1")
 	case AUDCLNT_E_EXCLUSIVE_MODE_NOT_ALLOWED:
 		err = fmt.Errorf("user has disabled exclusive-mode use of the device")
 	case AUDCLNT_E_ENDPOINT_CREATE_FAILED:
@@ -68,21 +68,21 @@ func NewError(hr uintptr) (err error) {
 	case AUDCLNT_E_SERVICE_NOT_RUNNING:
 		err = fmt.Errorf("Windows audio service is not running")
 	case AUDCLNT_E_EVENTHANDLE_NOT_EXPECTED:
-		fmt.Errorf("")
+		fmt.Errorf("@@2")
 	case AUDCLNT_E_EXCLUSIVE_MODE_ONLY:
-		fmt.Errorf("")
+		fmt.Errorf("@@3")
 	case AUDCLNT_E_BUFDURATION_PERIOD_NOT_EQUAL:
 		fmt.Errorf("duration and peridoicity is not equal")
 	case AUDCLNT_E_EVENTHANDLE_NOT_SET:
 		err = fmt.Errorf("audio stream is configured to use event driven buffering but event is not set")
 	case AUDCLNT_E_INCORRECT_BUFFER_SIZE:
-		err = fmt.Errorf("")
+		err = fmt.Errorf("@@4")
 	case AUDCLNT_E_BUFFER_SIZE_ERROR:
 		err = fmt.Errorf("requested buffer size is out of range")
 	case AUDCLNT_E_CPUUSAGE_EXCEEDED:
 		err = fmt.Errorf("exceeded maximum CPU usage")
 	case AUDCLNT_E_BUFFER_ERROR:
-		err = fmt.Errorf("")
+		err = fmt.Errorf("@@5")
 	case AUDCLNT_E_BUFFER_SIZE_NOT_ALIGNED:
 		err = fmt.Errorf("requested buffer size is not aligned")
 	case AUDCLNT_E_INVALID_DEVICE_PERIOD:
