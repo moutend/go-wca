@@ -14,7 +14,23 @@ func acGetBufferSize(ac *IAudioClient, bufferFrameSize *uint32) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
+func acGetStreamLatency(ac *IAudioClient, nsLatency *int64) (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
+
+func acGetCurrentPadding(ac *IAudioClient, numPadding *uint32) (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
+
+func acIsFormatSupported(ac *IAudioClient, shareMode uint32, wfx *WAVEFORMATEX, wfxClosestMatch **WAVEFORMATEX) (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
+
 func acGetMixFormat(ac *IAudioClient, wfx **WAVEFORMATEX) (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
+
+func acGetDevicePeriod(ac *IAudioClient, nsDefaultDevicePeriod, nsMinimumDevicePeriod *int64) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 

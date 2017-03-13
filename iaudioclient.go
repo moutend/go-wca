@@ -40,8 +40,27 @@ func (v *IAudioClient) GetBufferSize(bufferFrameSize *uint32) (err error) {
 	return
 }
 
+func (v *IAudioClient) GetStreamLatency(nsLatency *int64) (err error) {
+	err = acGetStreamLatency(v, nsLatency)
+	return
+}
+
+func (v *IAudioClient) GetCurrentPadding(numPadding *uint32) (err error) {
+	err = acGetCurrentPadding(v, numPadding)
+	return
+}
+
+func (v *IAudioClient) IsFormatSupported(shareMode uint32, wfx *WAVEFORMATEX, wfxClosestMatch **WAVEFORMATEX) (err error) {
+	err = acIsFormatSupported(v, shareMode, wfx, wfxClosestMatch)
+	return
+}
 func (v *IAudioClient) GetMixFormat(wfx **WAVEFORMATEX) (err error) {
-	err = acGetMixFormat(v, wfe)
+	err = acGetMixFormat(v, wfx)
+	return
+}
+
+func (v *IAudioClient) GetDevicePeriod(nsDefaultDevicePeriod, nsMinimumDevicePeriod *int64) (err error) {
+	err = acGetDevicePeriod(v, nsDefaultDevicePeriod, nsMinimumDevicePeriod)
 	return
 }
 

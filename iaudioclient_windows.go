@@ -42,15 +42,70 @@ func acGetBufferSize(ac *IAudioClient, bufferFrameSize *uint32) (err error) {
 	return
 }
 
+func acGetStreamLatency(ac *IAudioClient, nsLatency *int64) (err error) {
+	hr, _, _ := syscall.Syscall(
+		ac.VTable().GetStreamLatency,
+		2,
+		uintptr(unsafe.Pointer(ac)),
+		uintptr(unsafe.Pointer(nsLatency)),
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
+func acGetCurrentPadding(ac *IAudioClient, numPadding *uint32) (err error) {
+	hr, _, _ := syscall.Syscall(
+		ac.VTable().GetCurrentPadding,
+		2,
+		uintptr(unsafe.Pointer(ac)),
+		uintptr(unsafe.Pointer(numPadding)),
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
+func acIsFormatSupported(ac *IAudioClient, shareMode uint32, wfx *WAVEFORMATEX, wfxClosestMatch **WAVEFORMATEX) (err error) {
+	hr, _, _ := syscall.Syscall6(
+		ac.VTable().IsFormatSupported,
+		4,
+		uintptr(unsafe.Pointer(ac)),
+		uintptr(shareMode),
+		uintptr(unsafe.Pointer(wfx)),
+		uintptr(unsafe.Pointer(wfxClosestMatch)),
+		0,
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
 func acGetMixFormat(ac *IAudioClient, wfx **WAVEFORMATEX) (err error) {
 	hr, _, _ := syscall.Syscall(
 		ac.VTable().GetMixFormat,
 		2,
 		uintptr(unsafe.Pointer(ac)),
-		uintptr(unsafe.Pointer(wfe)),
+		uintptr(unsafe.Pointer(wfx)),
 		0)
 	if hr != 0 {
 		err = ole.NewError(hr)
+	}
+	return
+}
+
+func acGetDevicePeriod(ac *IAudioClient, nsDefaultDevicePeriod, nsMinimumDevicePeriod *int64) (err error) {
+	hr, _, _ := syscall.Syscall(
+		ac.VTable().GetDevicePeriod,
+		3,
+		uintptr(unsafe.Pointer(ac)),
+		uintptr(unsafe.Pointer(nsDefaultDevicePeriod)),
+		uintptr(unsafe.Pointer(nsMinimumDevicePeriod)))
+	if hr != 0 {
+		err = NewError(hr)
 	}
 	return
 }
@@ -63,7 +118,7 @@ func acStart(ac *IAudioClient) (err error) {
 		0,
 		0)
 	if hr != 0 {
-		err = ole.NewError(hr)
+		err = NewError(hr)
 	}
 	return
 }
