@@ -1,9 +1,9 @@
 package wca
 
 const (
-	eConsole         = 0x0
-	eMultimedia      = 0x1
-	eCommunications  = 0x2
+	EConsole         = 0x0
+	EMultimedia      = 0x1
+	ECommunications  = 0x2
 	ERole_enum_count = 0x3
 )
 
@@ -99,4 +99,5 @@ const (
 	CLSCTX_APPCONTAINER           = 0x400000
 	CLSCTX_ACTIVATE_AAA_AS_IU     = 0x800000
 	CLSCTX_PS_DLL                 = 0x80000000
+	CLSCTX_ALL                    = CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER | CLSCTX_REMOTE_SERVER
 )
