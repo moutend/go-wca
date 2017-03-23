@@ -1,6 +1,13 @@
 package wca
 
 const (
+	eConsole         = 0x0
+	eMultimedia      = 0x1
+	eCommunications  = 0x2
+	ERole_enum_count = 0x3
+)
+
+const (
 	DELETE       = 0x00010000
 	READ_CONTROL = 0x00020000
 	SYNCHRONIZE  = 0x00100000
