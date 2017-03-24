@@ -28,8 +28,8 @@ func (v *IMMDeviceEnumerator) EnumAudioEndpoints(eDataFlow, stateMask uint32, dc
 	return
 }
 
-func (v *IMMDeviceEnumerator) GetDefaultAudioEndpoint() (err error) {
-	err = mmdeGetDefaultAudioEndpoint()
+func (v *IMMDeviceEnumerator) GetDefaultAudioEndpoint(eDataFlow, stateMask uint32, mmd **IMMDevice) (err error) {
+	err = mmdeGetDefaultAudioEndpoint(v, eDataFlow, stateMask, mmd)
 	return
 }
 

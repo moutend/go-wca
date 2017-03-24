@@ -10,7 +10,7 @@ func mmdeEnumAudioEndpoints(de *IMMDeviceEnumerator, eDataFlow, stateMask uint32
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func mmdeGetDefaultAudioEndpoint() (err error) {
+func mmdeGetDefaultAudioEndpoint(de *IMMDeviceEnumerator, eDataFlow, stateMask uint32, mmd **IMMDevice) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
