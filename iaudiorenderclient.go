@@ -24,6 +24,7 @@ func (v *IAudioRenderClient) GetBuffer(requiredFrameSize uint32, data **byte) (e
 	err = arcGetBuffer(v, requiredFrameSize, data)
 	return
 }
+
 func (v *IAudioRenderClient) ReleaseBuffer(writtenFrameSize, flag uint32) (err error) {
 	err = arcReleaseBuffer(v, writtenFrameSize, flag)
 	return

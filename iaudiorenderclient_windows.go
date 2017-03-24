@@ -3,7 +3,6 @@
 package wca
 
 import (
-	//"reflect"
 	"syscall"
 	"unsafe"
 
@@ -11,14 +10,12 @@ import (
 )
 
 func arcGetBuffer(arc *IAudioRenderClient, requiredBufferSize uint32, data **byte) (err error) {
-	//dataValue := reflect.ValueOf(data).Elem()
 	hr, _, _ := syscall.Syscall(
 		arc.VTable().GetBuffer,
 		3,
 		uintptr(unsafe.Pointer(arc)),
 		uintptr(requiredBufferSize),
 		uintptr(unsafe.Pointer(data)))
-	//dataValue.Addr().Pointer())
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
