@@ -9,11 +9,11 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
-func mmdeEnumAudioEndpoints(de *IMMDeviceEnumerator, eDataFlow, stateMask uint32, dc **IMMDeviceCollection) (err error) {
+func mmdeEnumAudioEndpoints(mmde *IMMDeviceEnumerator, eDataFlow, stateMask uint32, dc **IMMDeviceCollection) (err error) {
 	hr, _, _ := syscall.Syscall6(
-		de.VTable().EnumAudioEndpoints,
+		mmde.VTable().EnumAudioEndpoints,
 		4,
-		uintptr(unsafe.Pointer(de)),
+		uintptr(unsafe.Pointer(mmde)),
 		uintptr(eDataFlow), //uintptr(unsafe.Pointer(&eDataFlow)),
 		uintptr(stateMask), //uintptr(unsafe.Pointer(&stateMask)),
 		uintptr(unsafe.Pointer(dc)),
@@ -25,11 +25,11 @@ func mmdeEnumAudioEndpoints(de *IMMDeviceEnumerator, eDataFlow, stateMask uint32
 	return
 }
 
-func mmdeGetDefaultAudioEndpoint(de *IMMDeviceEnumerator, eDataFlow, stateMask uint32, mmd **IMMDevice) (err error) {
+func mmdeGetDefaultAudioEndpoint(mmde *IMMDeviceEnumerator, eDataFlow, stateMask uint32, mmd **IMMDevice) (err error) {
 	hr, _, _ := syscall.Syscall6(
-		de.VTable().GetDefaultAudioEndpoint,
+		mmde.VTable().GetDefaultAudioEndpoint,
 		4,
-		uintptr(unsafe.Pointer(de)),
+		uintptr(unsafe.Pointer(mmde)),
 		uintptr(eDataFlow),
 		uintptr(stateMask),
 		uintptr(unsafe.Pointer(mmd)),
@@ -45,10 +45,10 @@ func mmdeGetDevice() (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func mmdeRegisterEndpointNotificationCallback() (err error) {
+func mmdeRegisterEndpointNotificationCallback(mmde *IMMDeviceEnumerator, mmnc *IMMNotificationClient) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func mmdeUnregisterEndpointNotificationCallback() (err error) {
+func mmdeUnregisterEndpointNotificationCallback(mmde *IMMDeviceEnumerator, mmnc *IMMNotificationClient) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }

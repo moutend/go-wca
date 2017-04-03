@@ -6,11 +6,11 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
-func mmdeEnumAudioEndpoints(de *IMMDeviceEnumerator, eDataFlow, stateMask uint32, dc **IMMDeviceCollection) (err error) {
+func mmdeEnumAudioEndpoints(mmde *IMMDeviceEnumerator, eDataFlow, stateMask uint32, dc **IMMDeviceCollection) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func mmdeGetDefaultAudioEndpoint(de *IMMDeviceEnumerator, eDataFlow, stateMask uint32, mmd **IMMDevice) (err error) {
+func mmdeGetDefaultAudioEndpoint(mmde *IMMDeviceEnumerator, eDataFlow, stateMask uint32, mmd **IMMDevice) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
