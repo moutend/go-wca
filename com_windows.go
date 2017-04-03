@@ -14,17 +14,19 @@ var (
 	modkernel32, _ = syscall.LoadDLL("kernel32.dll")
 	modole32, _    = syscall.LoadDLL("ole32.dll")
 
-	procCreateEventExA, _   = modkernel32.FindProc("CreateEventExA")
-	procCloseHandle, _      = modkernel32.FindProc("CloseHandle")
-	procCoCreateInstance, _ = modole32.FindProc("CoCreateInstance")
+	procCreateEventExA, _      = modkernel32.FindProc("CreateEventExA")
+	procCloseHandle, _         = modkernel32.FindProc("CloseHandle")
+	procCoCreateInstance, _    = modole32.FindProc("CoCreateInstance")
+	procWaitForSingleObject, _ = modole32.FindProc("WaitForSingleObject")
 )
 
-func CreateEventExA(securityAttributes, name uintptr, flag, desiredAccess uint32) (hr uintptr) {
-	hr, _, _ = procCreateEventExA.Call(
+func CreateEventExA(securityAttributes, name uintptr, flag, desiredAccess uint32) (handle syscall.Handle) {
+	hr, _, _ := procCreateEventExA.Call(
 		securityAttributes,
 		name,
 		uintptr(flag),
 		uintptr(desiredAccess))
+	handle = syscall.Handle(hr)
 	return
 }
 
@@ -47,5 +49,13 @@ func CoCreateInstance(clsid *ole.GUID, punk uintptr, clsctx uint32, iid *ole.GUI
 	if hr != ole.S_OK {
 		err = ole.NewError(hr)
 	}
+	return
+}
+
+func WaitForSingleObject(handle syscall.Handle, milliseconds uint32) (dword uint32) {
+	hr, _, _ := procWaitForSingleObject.Call(
+		uintptr(handle),
+		uintptr(milliseconds))
+	dword = uint32(hr)
 	return
 }

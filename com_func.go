@@ -17,3 +17,7 @@ func CloseHandle(hObject uintptr) (err error) {
 func CoCreateInstance(clsid *ole.GUID, punk uintptr, clsctx uint32, iid *ole.GUID, obj interface{}) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
+
+func WaitForSingleObject(handle syscall.Handle, milliseconds uint32) (dword uint32) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
