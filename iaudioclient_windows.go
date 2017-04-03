@@ -148,6 +148,20 @@ func acReset(ac *IAudioClient) (err error) {
 	}
 	return
 }
+
+func acSetEventHandle(ac *IAudioClient, handle syscall.Handle) (err error) {
+	hr, _, _ := syscall.Syscall(
+		ac.VTable().SetEventHandle,
+		2,
+		uintptr(unsafe.Pointer(ac)),
+		uintptr(handle),
+		0)
+	if hr != 0 {
+		err = ole.NewError(hr)
+	}
+	return
+}
+
 func acGetService(ac *IAudioClient, refIID *ole.GUID, obj interface{}) (err error) {
 	objValue := reflect.ValueOf(obj).Elem()
 	hr, _, _ := syscall.Syscall(
