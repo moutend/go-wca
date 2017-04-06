@@ -1,5 +1,15 @@
 package wca
 
+// The following constant is declared in MMReg.h.
+const (
+	WAVE_FORMAT_PCM = 0x1
+)
+
+// The following constant is declared in WinBase.h.
+const (
+	INFINITE = 0xFFFFFFFF // Infinite timeout
+)
+
 const (
 	EConsole         = 0x0
 	EMultimedia      = 0x1
