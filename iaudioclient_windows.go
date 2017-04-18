@@ -118,7 +118,7 @@ func acStart(ac *IAudioClient) (err error) {
 		0,
 		0)
 	if hr != 0 {
-		err = NewError(hr)
+		err = ole.NewError(hr)
 	}
 	return
 }
