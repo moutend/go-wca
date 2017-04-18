@@ -2,8 +2,13 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
+	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"os"
 	"time"
 	"unsafe"
 
@@ -11,26 +16,71 @@ import (
 	"github.com/moutend/gwca"
 )
 
+type WAVEAudio struct {
+	Channels       uint16
+	SamplesPerSec  uint32
+	AvgBytesPerSec uint32
+	BlockAlign     uint16
+	BitsPerSample  uint16
+	DataTag        [4]byte // 'data'
+	RawDataSize    uint32
+	RawData        []byte
+}
+
+func (v *WAVEAudio) Bytes() (output []byte) {
+	buf := new(bytes.Buffer)
+
+	binary.Write(buf, binary.BigEndian, []byte("RIFF"))
+	binary.Write(buf, binary.LittleEndian, uint32(v.RawDataSize+36)) // Header size is 44 byte, so 44 - 8 = 36
+	binary.Write(buf, binary.BigEndian, []byte("WAVEfmt "))
+	binary.Write(buf, binary.LittleEndian, uint32(16)) // 16 (0x10000000) for PCM
+	binary.Write(buf, binary.LittleEndian, uint16(1))  // 1 (0x0001) for PCM
+	binary.Write(buf, binary.LittleEndian, v.Channels)
+	binary.Write(buf, binary.LittleEndian, v.SamplesPerSec)
+	binary.Write(buf, binary.LittleEndian, v.AvgBytesPerSec)
+	binary.Write(buf, binary.LittleEndian, v.BlockAlign)
+	binary.Write(buf, binary.LittleEndian, v.BitsPerSample)
+	binary.Write(buf, binary.BigEndian, []byte("data"))
+	binary.Write(buf, binary.LittleEndian, v.RawDataSize)
+	binary.Write(buf, binary.LittleEndian, v.RawData)
+
+	return buf.Bytes()
+}
+
 func main() {
-	err := run()
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println("Successfully done")
+	var err error
+	if err = run(os.Args); err != nil {
+		log.Fatal(err)
 	}
 	return
 }
 
-func run() (err error) {
-	output, err := capture()
-	if err = ioutil.WriteFile("output.raw", output, 0644); err != nil {
+func run(args []string) (err error) {
+	var durationFlag int64
+	var filenameFlag string
+	var audio *WAVEAudio
+
+	f := flag.NewFlagSet(args[0], flag.ExitOnError)
+	f.Int64Var(&durationFlag, "t", 0, "Specify recording time in millisecond")
+	f.StringVar(&filenameFlag, "f", "output.wav", "Specify file name to save (default is output.wav)")
+	f.Parse(args[1:])
+
+	if durationFlag <= 0 {
 		return
 	}
-	fmt.Println("Saved captured audio as output.raw")
+	if audio, err = capture(); err != nil {
+		return
+	}
+	if err = ioutil.WriteFile(filenameFlag, audio.Bytes(), 0644); err != nil {
+		return
+	}
+	fmt.Printf("Saved captured audio as %s\n", filenameFlag)
 	return
 }
 
-func capture() (output []byte, err error) {
+func capture() (audio *WAVEAudio, err error) {
+	audio = &WAVEAudio{}
+
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
@@ -71,13 +121,19 @@ func capture() (output []byte, err error) {
 	}
 	defer ole.CoTaskMemFree(uintptr(unsafe.Pointer(wfx)))
 
-	if wfx.WFormatTag != wca.WAVE_FORMAT_PCM {
-		wfx.WFormatTag = 1
-		wfx.WBitsPerSample = 16
-		wfx.NBlockAlign = (wfx.WBitsPerSample / 8) * wfx.NChannels // 16 bit stereo is 32bit (4 byte) per sample
-		wfx.NAvgBytesPerSec = wfx.NSamplesPerSec * uint32(wfx.NBlockAlign)
-		wfx.CbSize = 0
-	}
+	wfx.WFormatTag = 1
+	wfx.NChannels = 2
+	wfx.NSamplesPerSec = 44100
+	wfx.WBitsPerSample = 16
+	wfx.NBlockAlign = (wfx.WBitsPerSample / 8) * wfx.NChannels // 16 bit stereo is 32bit (4 byte) per sample
+	wfx.NAvgBytesPerSec = wfx.NSamplesPerSec * uint32(wfx.NBlockAlign)
+	wfx.CbSize = 0
+
+	audio.Channels = wfx.NChannels
+	audio.SamplesPerSec = wfx.NSamplesPerSec
+	audio.AvgBytesPerSec = wfx.NAvgBytesPerSec
+	audio.BlockAlign = wfx.NBlockAlign
+	audio.BitsPerSample = wfx.WBitsPerSample
 
 	fmt.Println("--------")
 	fmt.Printf("Format: PCM %d bit signed integer\n", wfx.WBitsPerSample)
@@ -91,7 +147,7 @@ func capture() (output []byte, err error) {
 	if err = ac.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
 	}
-	capturingPeriod = time.Duration(defaultPeriod * 100)
+	capturingPeriod = time.Duration(int(defaultPeriod) * 100)
 	fmt.Printf("Default capturing period: %d ms\n", capturingPeriod/time.Millisecond)
 
 	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_LOOPBACK, 500*10000, 0, wfx, nil); err != nil {
@@ -118,6 +174,7 @@ func capture() (output []byte, err error) {
 	time.Sleep(capturingPeriod)
 
 	var data *byte
+	var output []byte
 	for m := 0; m < 2000; m++ {
 		var availableFrameSize uint32
 		var flags uint32
@@ -126,18 +183,30 @@ func capture() (output []byte, err error) {
 		if err = acc.GetBuffer(&data, &availableFrameSize, &flags, &devicePosition, &qcpPosition); err != nil {
 			return
 		}
+		if availableFrameSize == 0 {
+			continue
+		}
 
 		start := unsafe.Pointer(data)
-		for n := 0; n < int(availableFrameSize)*int(wfx.NBlockAlign); n++ {
+		lim := int(availableFrameSize) * int(wfx.NBlockAlign)
+		for n := 0; n < lim; n++ {
 			var b *byte
 			b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
 			output = append(output, *b)
 		}
-		time.Sleep(capturingPeriod)
+		audio.RawDataSize += uint32(lim)
+		var padding uint32
+		if err = ac.GetCurrentPadding(&padding); err != nil {
+			return
+		}
+		//capturingPeriod = time.Duration(1000000 * 1000 * int(availableFrameSize) / int(wfx.NSamplesPerSec))
+		capturingPeriod = time.Duration(1000000 * 1000 * int(bufferFrameSize-padding) / int(wfx.NSamplesPerSec))
+		time.Sleep(capturingPeriod / 2)
 		if err = acc.ReleaseBuffer(availableFrameSize); err != nil {
 			return
 		}
 	}
+	audio.RawData = output
 
 	if err = ac.Stop(); err != nil {
 		return
