@@ -40,47 +40,45 @@ func main() {
 }
 
 func run(args []string) (err error) {
-	var (
-		isHelpRequired    bool
-		isVersionRequired bool
-		filenameFlag      string
-		audio             WAVEFormat
-	)
+	var filenameFlag string
+	var audio WAVEFormat
+
 	f := flag.NewFlagSet(args[0], flag.ExitOnError)
-	f.BoolVar(&isHelpRequired, "h", false, "Show help Message")
-	f.BoolVar(&isVersionRequired, "v", false, "Show version")
-	f.StringVar(&filenameFlag, "f", "", "Specify WAVE audio file (e.g. input.wav)")
+	f.StringVar(&filenameFlag, "f", "", "Specify WAVE format audio (e.g. music.wav)")
 	f.Parse(args[1:])
+
+	if filenameFlag == "" {
+		return
+	}
 	if audio, err = readFile(filenameFlag); err != nil {
 		return
 	}
-	fmt.Printf("playing %s\n", filenameFlag)
 	return render(audio)
 }
 
 func readFile(filename string) (audio WAVEFormat, err error) {
 	var file []byte
-	var wfx WAVEFormat
 	if file, err = ioutil.ReadFile(filename); err != nil {
 		return
 	}
 	reader := bytes.NewReader(file)
-	binary.Read(io.NewSectionReader(reader, 20, 2), binary.LittleEndian, &wfx.FormatTag)
-	binary.Read(io.NewSectionReader(reader, 22, 2), binary.LittleEndian, &wfx.Channels)
-	binary.Read(io.NewSectionReader(reader, 24, 4), binary.LittleEndian, &wfx.SamplesPerSec)
-	binary.Read(io.NewSectionReader(reader, 28, 4), binary.LittleEndian, &wfx.AvgBytesPerSec)
-	binary.Read(io.NewSectionReader(reader, 32, 2), binary.LittleEndian, &wfx.BlockAlign)
-	binary.Read(io.NewSectionReader(reader, 34, 2), binary.LittleEndian, &wfx.BitsPerSample)
-	binary.Read(io.NewSectionReader(reader, 36, 4), binary.LittleEndian, &wfx.DataTag)
-	binary.Read(io.NewSectionReader(reader, 40, 4), binary.LittleEndian, &wfx.DataSize)
+	binary.Read(io.NewSectionReader(reader, 20, 2), binary.LittleEndian, &audio.FormatTag)
+	binary.Read(io.NewSectionReader(reader, 22, 2), binary.LittleEndian, &audio.Channels)
+	binary.Read(io.NewSectionReader(reader, 24, 4), binary.LittleEndian, &audio.SamplesPerSec)
+	binary.Read(io.NewSectionReader(reader, 28, 4), binary.LittleEndian, &audio.AvgBytesPerSec)
+	binary.Read(io.NewSectionReader(reader, 32, 2), binary.LittleEndian, &audio.BlockAlign)
+	binary.Read(io.NewSectionReader(reader, 34, 2), binary.LittleEndian, &audio.BitsPerSample)
+	binary.Read(io.NewSectionReader(reader, 36, 4), binary.LittleEndian, &audio.DataTag)
+	binary.Read(io.NewSectionReader(reader, 40, 4), binary.LittleEndian, &audio.DataSize)
+
 	buf := new(bytes.Buffer)
-	io.Copy(buf, io.NewSectionReader(reader, 44, int64(wfx.DataSize)))
-	wfx.RawData = buf.Bytes()
-	fmt.Printf("data size %d\n", len(wfx.RawData))
-	if len(wfx.RawData) == 0 {
+	io.Copy(buf, io.NewSectionReader(reader, 44, int64(audio.DataSize)))
+	audio.RawData = buf.Bytes()
+
+	if len(audio.RawData) == 0 {
 		err = fmt.Errorf("empty data")
 	}
-	return wfx, nil
+	return
 }
 
 func render(audio WAVEFormat) (err error) {
@@ -110,7 +108,7 @@ func render(audio WAVEFormat) (err error) {
 	if err = ps.GetValue(&wca.PKEY_Device_FriendlyName, &pv); err != nil {
 		return
 	}
-	fmt.Printf("Capturing what you hear from\n%s\n", pv.String())
+	fmt.Printf("Rendering audio to %s\n", pv.String())
 
 	var ac *wca.IAudioClient
 	if err = mmd.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &ac); err != nil {
@@ -141,12 +139,12 @@ func render(audio WAVEFormat) (err error) {
 
 	var defaultPeriod int64
 	var minimumPeriod int64
-	var capturingPeriod time.Duration
+	var renderingPeriod time.Duration
 	if err = ac.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
 	}
-	capturingPeriod = time.Duration(defaultPeriod * 100)
-	fmt.Printf("Default capturing period: %d ms\n", capturingPeriod/time.Millisecond)
+	renderingPeriod = time.Duration(defaultPeriod * 100)
+	fmt.Printf("Default rendering period: %d ms\n", renderingPeriod/time.Millisecond)
 
 	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK, 500*10000, 0, wfx, nil); err != nil {
 		return
@@ -178,7 +176,7 @@ func render(audio WAVEFormat) (err error) {
 	if err = ac.Start(); err != nil {
 		return
 	}
-	fmt.Println("Start rendering with shared-event driven mode")
+	fmt.Println("Start rendering WAVE format audio with shared-event-driven mode")
 
 	var data *byte
 	var offset int
@@ -188,7 +186,6 @@ func render(audio WAVEFormat) (err error) {
 		}
 		select {
 		case <-signalChan:
-			fmt.Println("trapped")
 			return
 		case <-notificationChan:
 			var padding uint32
@@ -205,10 +202,13 @@ func render(audio WAVEFormat) (err error) {
 			}
 			start := unsafe.Pointer(data)
 			lim := int(availableFrameSize) * int(wfx.NBlockAlign)
+			remaining := int(audio.DataSize) - offset
+			if remaining < lim {
+				lim = remaining
+			}
 			for n := 0; n < lim; n++ {
 				var b *byte
 				b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
-				//*b = byte(rand.Intn(255))
 				*b = audio.RawData[offset+n]
 			}
 			offset += lim
@@ -227,7 +227,7 @@ func render(audio WAVEFormat) (err error) {
 	if err = ac.Stop(); err != nil {
 		return
 	}
-	fmt.Println("Stopping capturing loopback audio")
+	fmt.Println("Stop rendering WAVE format audio")
 	return
 }
 
