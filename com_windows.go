@@ -17,7 +17,7 @@ var (
 	procCreateEventExA, _      = modkernel32.FindProc("CreateEventExA")
 	procCloseHandle, _         = modkernel32.FindProc("CloseHandle")
 	procCoCreateInstance, _    = modole32.FindProc("CoCreateInstance")
-	procWaitForSingleObject, _ = modole32.FindProc("WaitForSingleObject")
+	procWaitForSingleObject, _ = modkernel32.FindProc("WaitForSingleObject")
 )
 
 func CreateEventExA(securityAttributes, name uintptr, flag, desiredAccess uint32) (handle syscall.Handle) {
@@ -30,8 +30,8 @@ func CreateEventExA(securityAttributes, name uintptr, flag, desiredAccess uint32
 	return
 }
 
-func CloseHandle(hObject uintptr) (err error) {
-	hr, _, _ := procCloseHandle.Call(hObject)
+func CloseHandle(hObject syscall.Handle) (err error) {
+	hr, _, _ := procCloseHandle.Call(uintptr(hObject))
 	if hr == 0 {
 		err = fmt.Errorf("unexpected error: call GetLastError to get details")
 	}
