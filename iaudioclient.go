@@ -1,7 +1,6 @@
 package wca
 
 import (
-	"syscall"
 	"unsafe"
 
 	"github.com/go-ole/go-ole"
@@ -80,7 +79,7 @@ func (v *IAudioClient) Reset() (err error) {
 	return
 }
 
-func (v *IAudioClient) SetEventHandle(handle syscall.Handle) (err error) {
+func (v *IAudioClient) SetEventHandle(handle uintptr) (err error) {
 	err = acSetEventHandle(v, handle)
 	return
 }

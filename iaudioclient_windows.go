@@ -149,7 +149,7 @@ func acReset(ac *IAudioClient) (err error) {
 	return
 }
 
-func acSetEventHandle(ac *IAudioClient, handle syscall.Handle) (err error) {
+func acSetEventHandle(ac *IAudioClient, handle uintptr) (err error) {
 	hr, _, _ := syscall.Syscall(
 		ac.VTable().SetEventHandle,
 		2,

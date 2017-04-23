@@ -18,10 +18,10 @@ func mmdeGetDevice() (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func mmdeRegisterEndpointNotificationCallback() (err error) {
+func mmdeRegisterEndpointNotificationCallback(mmde *IMMDeviceEnumerator, mmnc *IMMNotificationClient) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func mmdeUnregisterEndpointNotificationCallback() (err error) {
+func mmdeUnregisterEndpointNotificationCallback(mmde *IMMDeviceEnumerator, mmnc *IMMNotificationClient) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }

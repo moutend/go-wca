@@ -3,8 +3,6 @@
 package wca
 
 import (
-	"syscall"
-
 	"github.com/go-ole/go-ole"
 )
 
@@ -48,7 +46,7 @@ func acReset(ac *IAudioClient) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func acSetEventHandle(ac *IAudioClient, handle syscall.Handle) (err error) {
+func acSetEventHandle(ac *IAudioClient, handle uintptr) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 

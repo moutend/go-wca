@@ -5,6 +5,8 @@ import (
 )
 
 var (
+	// Core Audio Interfaces - MSDN
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/dd370805(v=vs.85).aspx
 	// The following IIDs are defined in mmdeviceapi.h.
 	IID_IMMNotificationClient = ole.NewGUID("{7991EEC9-7E89-4D85-8390-6C703CEC60C0}")
 	IID_IMMDevice             = ole.NewGUID("{D666063F-1587-4E43-81F1-B948E807363F}")

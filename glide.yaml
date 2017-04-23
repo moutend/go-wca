@@ -1,3 +1,0 @@
-package: github.com/moutend/gwca
-import:
-- package: github.com/go-ole/go-ole
