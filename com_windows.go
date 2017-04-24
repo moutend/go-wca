@@ -20,17 +20,17 @@ var (
 	procWaitForSingleObject, _ = modkernel32.FindProc("WaitForSingleObject")
 )
 
-func CreateEventExA(securityAttributes, name uintptr, flag, desiredAccess uint32) (handle syscall.Handle) {
+func CreateEventExA(securityAttributes, name uintptr, flag, desiredAccess uint32) (handle uintptr) {
 	hr, _, _ := procCreateEventExA.Call(
 		securityAttributes,
 		name,
 		uintptr(flag),
 		uintptr(desiredAccess))
-	handle = syscall.Handle(hr)
+	handle = hr
 	return
 }
 
-func CloseHandle(hObject syscall.Handle) (err error) {
+func CloseHandle(hObject uintptr) (err error) {
 	hr, _, _ := procCloseHandle.Call(uintptr(hObject))
 	if hr == 0 {
 		err = fmt.Errorf("unexpected error: call GetLastError to get details")
@@ -52,7 +52,7 @@ func CoCreateInstance(clsid *ole.GUID, punk uintptr, clsctx uint32, iid *ole.GUI
 	return
 }
 
-func WaitForSingleObject(handle syscall.Handle, milliseconds uint32) (dword uint32) {
+func WaitForSingleObject(handle uintptr, milliseconds uint32) (dword uint32) {
 	hr, _, _ := procWaitForSingleObject.Call(
 		uintptr(handle),
 		uintptr(milliseconds))
