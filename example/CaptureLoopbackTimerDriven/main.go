@@ -13,7 +13,7 @@ import (
 	"unsafe"
 
 	"github.com/go-ole/go-ole"
-	"github.com/moutend/gwca"
+	"github.com/moutend/go-wca"
 )
 
 type WAVEAudio struct {
