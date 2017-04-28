@@ -11,12 +11,11 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"syscall"
 	"time"
 	"unsafe"
 
 	"github.com/go-ole/go-ole"
-	"github.com/moutend/gwca"
+	"github.com/moutend/go-wca"
 )
 
 type WAVEFormat struct {
@@ -231,7 +230,7 @@ func render(audio WAVEFormat) (err error) {
 	return
 }
 
-func watchEvent(doneChan <-chan struct{}, audioReadyEvent syscall.Handle) (notificationChan chan struct{}, errorChan chan error) {
+func watchEvent(doneChan <-chan struct{}, audioReadyEvent uintptr) (notificationChan chan struct{}, errorChan chan error) {
 	notificationChan = make(chan struct{}, 1)
 	errorChan = make(chan error, 1)
 
