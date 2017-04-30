@@ -125,6 +125,7 @@ func render(audio WAVEFormat) (err error) {
 		wfx.WFormatTag = 1
 		wfx.NSamplesPerSec = audio.SamplesPerSec
 		wfx.WBitsPerSample = audio.BitsPerSample
+		wfx.NChannels = audio.Channels
 		wfx.NBlockAlign = audio.BlockAlign
 		wfx.NAvgBytesPerSec = audio.AvgBytesPerSec
 		wfx.CbSize = 0
@@ -205,8 +206,8 @@ func render(audio WAVEFormat) (err error) {
 			if remaining < lim {
 				lim = remaining
 			}
+			var b *byte
 			for n := 0; n < lim; n++ {
-				var b *byte
 				b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
 				*b = audio.RawData[offset+n]
 			}
