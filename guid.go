@@ -18,6 +18,8 @@ var (
 
 	// The following IIDs are defined in Audioclient.h.
 	IID_IAudioClient          = ole.NewGUID("{1CB9AD4C-DBFA-4c32-B178-C2F568A703B2}")
+	IID_IAudioClient2         = ole.NewGUID("{726778CD-F60A-4eda-82DE-E47610CD78AA}")
+	IID_IAudioClient3         = ole.NewGUID("{7ED4EE07-8E67-4CD4-8C1A-2B7A5987AD42}")
 	IID_IAudioRenderClient    = ole.NewGUID("{F294ACFC-3146-4483-A7BF-ADDCA7C260E2}")
 	IID_IAudioCaptureClient   = ole.NewGUID("{C8ADBD64-E71E-48a0-A4DE-185C395CD317}")
 	IID_IAudioClock           = ole.NewGUID("{CD63314F-3FBA-4a1b-812C-EF96358728E7}")
