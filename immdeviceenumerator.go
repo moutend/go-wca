@@ -38,7 +38,7 @@ func (v *IMMDeviceEnumerator) GetDevice() (err error) {
 	return
 }
 
-func (v *IMMDeviceEnumerator) RegisterEndpointNotificationCallback(mmnc *IMMNotificationClient) (err error) {
+func (v *IMMDeviceEnumerator) RegisterEndpointNotificationCallback(mmnc *IMMNotificationClientVtbl) (err error) {
 	err = mmdeRegisterEndpointNotificationCallback(v, mmnc)
 	return
 }
