@@ -21,12 +21,11 @@ var (
 )
 
 func CreateEventExA(securityAttributes, name uintptr, flag, desiredAccess uint32) (handle uintptr) {
-	hr, _, _ := procCreateEventExA.Call(
+	handle, _, _ = procCreateEventExA.Call(
 		securityAttributes,
 		name,
 		uintptr(flag),
 		uintptr(desiredAccess))
-	handle = hr
 	return
 }
 
