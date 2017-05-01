@@ -10,14 +10,10 @@ import (
 // See MSDN's documentation:
 // https://msdn.microsoft.com/en-us/library/windows/desktop/hh404179(v=vs.85).aspx
 type IAudioClient3 struct {
-	ole.IUnknown
-	IAudioClient
 	IAudioClient2
 }
 
 type IAudioClient3Vtbl struct {
-	ole.IUnknownVtbl
-	IAudioClientVtbl
 	IAudioClient2Vtbl
 	GetSharedModeEnginePeriod        uintptr
 	GetCurrentSharedModeEnginePeriod uintptr
