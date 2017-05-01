@@ -1,5 +1,26 @@
 package wca
 
+const (
+	AUDCLNT_STREAMOPTIONS_NONE         = 0x00
+	AUDCLNT_STREAMOPTIONS_RAW          = 0x01
+	AUDCLNT_STREAMOPTIONS_MATCH_FORMAT = 0x02
+)
+
+const (
+	AudioCategory_Other                  = 0x0
+	AudioCategory_ForegroundOnlyMedia    = 0x1
+	AudioCategory_BackgroundCapableMedia = 0x2
+	AudioCategory_Communications         = 0x3
+	AudioCategory_Alerts                 = 0x4
+	AudioCategory_SoundEffects           = 0x5
+	AudioCategory_GameEffects            = 0x6
+	AudioCategory_GameMedia              = 0x7
+	AudioCategory_GameChat               = 0x8
+	AudioCategory_Speech                 = 0x9
+	AudioCategory_Movie                  = 0xA
+	AudioCategory_Media                  = 0xB
+)
+
 // The following constant is declared in MMReg.h.
 const (
 	WAVE_FORMAT_PCM = 0x1
