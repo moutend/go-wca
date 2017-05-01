@@ -25,3 +25,18 @@ type IAudioClient2Vtbl struct {
 func (v *IAudioClient2) VTable() *IAudioClient2Vtbl {
 	return (*IAudioClient2Vtbl)(unsafe.Pointer(v.RawVTable))
 }
+
+func (v *IAudioClient2) IsOffloadCapable(category uint32, isOffloadCapable *bool) (err error) {
+	err = ac2IsOffloadCapable(v, category, isOffloadCapable)
+	return
+}
+
+func (v *IAudioClient2) SetClientProperties(properties *AudioClientProperties) (err error) {
+	err = ac2SetClientProperties(v, properties)
+	return
+}
+
+func (v *IAudioClient2) GetBufferSizeLimits(wfx *WAVEFORMATEX, isEventDriven bool, minBufferDuration, maxBufferDuration *uint32) (err error) {
+	err = ac2GetBufferSizeLimits(v, wfx, isEventDriven, minBufferDuration, maxBufferDuration)
+	return
+}

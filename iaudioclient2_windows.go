@@ -22,13 +22,13 @@ func ac2IsOffloadCapable(ac2 *IAudioClient2, category uint32, isOffloadCapable *
 	return
 }
 
-func ac2SetClientProperties(ac2 *IAudioClient2, category uint32, isOffloadCapable *bool) (err error) {
+func ac2SetClientProperties(ac2 *IAudioClient2, properties *AudioClientProperties) (err error) {
 	hr, _, _ := syscall.Syscall(
 		ac2.VTable().SetClientProperties,
-		3,
+		2,
 		uintptr(unsafe.Pointer(ac2)),
-		uintptr(category),
-		uintptr(unsafe.Pointer(isOffloadCapable)))
+		uintptr(unsafe.Pointer(properties)),
+		0)
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
