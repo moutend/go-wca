@@ -27,3 +27,18 @@ type IAudioClient3Vtbl struct {
 func (v *IAudioClient3) VTable() *IAudioClient3Vtbl {
 	return (*IAudioClient3Vtbl)(unsafe.Pointer(v.RawVTable))
 }
+
+func (v *IAudioClient3) GetSharedModeEnginePeriod(wfx *WAVEFORMATEX, defaultPeriodInFrames, fundamentalPeriodInFrames, minPeriodInFrames, maxPeriodInFrames *uint32) (err error) {
+	err = ac3GetSharedModeEnginePeriod(v, wfx, defaultPeriodInFrames, fundamentalPeriodInFrames, minPeriodInFrames, maxPeriodInFrames)
+	return
+}
+
+func (v *IAudioClient3) GetCurrentSharedModeEnginePeriod(wfx **WAVEFORMATEX, currentPeriodInFrames *uint32) (err error) {
+	err = ac3GetCurrentSharedModeEnginePeriod(v, wfx, currentPeriodInFrames)
+	return
+}
+
+func (v *IAudioClient3) InitializeSharedAudioStream(streamFlags, periodInFrames uint32, wfx *WAVEFORMATEX, audioSessionGUID *ole.GUID) (err error) {
+	err = ac3InitializeSharedAudioStream(v, streamFlags, periodInFrames, wfx, audioSessionGUID)
+	return
+}
