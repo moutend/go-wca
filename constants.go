@@ -1,41 +1,45 @@
 package wca
 
 const (
-	AUDCLNT_STREAMOPTIONS_NONE         = 0x00
-	AUDCLNT_STREAMOPTIONS_RAW          = 0x01
-	AUDCLNT_STREAMOPTIONS_MATCH_FORMAT = 0x02
+	AUDCLNT_SESSIONFLAGS_EXPIREWHENUNOWNED       = 0x10000000
+	AUDCLNT_SESSIONFLAGS_DISPLAY_HIDE            = 0x20000000
+	AUDCLNT_SESSIONFLAGS_DISPLAY_HIDEWHENEXPIRED = 0x40000000
 )
 
 const (
-	AudioCategory_Other                  = 0x0
-	AudioCategory_ForegroundOnlyMedia    = 0x1
-	AudioCategory_BackgroundCapableMedia = 0x2
-	AudioCategory_Communications         = 0x3
-	AudioCategory_Alerts                 = 0x4
-	AudioCategory_SoundEffects           = 0x5
-	AudioCategory_GameEffects            = 0x6
-	AudioCategory_GameMedia              = 0x7
-	AudioCategory_GameChat               = 0x8
-	AudioCategory_Speech                 = 0x9
-	AudioCategory_Movie                  = 0xA
-	AudioCategory_Media                  = 0xB
+	AUDCLNT_STREAMOPTIONS_NONE = iota
+	AUDCLNT_STREAMOPTIONS_RAW
+	AUDCLNT_STREAMOPTIONS_MATCH_FORMAT
 )
 
-// The following constant is declared in MMReg.h.
+const (
+	AudioCategory_Other = iota
+	AudioCategory_ForegroundOnlyMedia
+	AudioCategory_BackgroundCapableMedia
+	AudioCategory_Communications
+	AudioCategory_Alerts
+	AudioCategory_SoundEffects
+	AudioCategory_GameEffects
+	AudioCategory_GameMedia
+	AudioCategory_GameChat
+	AudioCategory_Speech
+	AudioCategory_Movie
+	AudioCategory_Media
+)
+
 const (
 	WAVE_FORMAT_PCM = 0x1
 )
 
-// The following constant is declared in WinBase.h.
 const (
-	INFINITE = 0xFFFFFFFF // Infinite timeout
+	INFINITE = 0xFFFFFFFF
 )
 
 const (
-	EConsole         = 0x0
-	EMultimedia      = 0x1
-	ECommunications  = 0x2
-	ERole_enum_count = 0x3
+	EConsole = iota
+	EMultimedia
+	ECommunications
+	ERole_enum_count
 )
 
 const (
@@ -56,7 +60,6 @@ const (
 	CREATE_EVENT_MANUAL_RESET = 0x00000001
 )
 
-// The following constants are defined in Audioclient.h.
 const (
 	AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY = 0x1
 	AUDCLNT_BUFFERFLAGS_SILENT             = 0x2
@@ -73,15 +76,14 @@ const (
 	AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY = 0x08000000
 )
 
-// the following AUDCLNT_SHAREMODE enumeration values are defined in audiosessiontypes.h.
 const (
-	AUDCLNT_SHAREMODE_SHARED    = 0x0
-	AUDCLNT_SHAREMODE_EXCLUSIVE = 0x1
+	AUDCLNT_SHAREMODE_SHARED = iota
+	AUDCLNT_SHAREMODE_EXCLUSIVE
 )
 
 const (
-	ENDPOINT_SYSFX_ENABLED  = 0x00000000
-	ENDPOINT_SYSFX_DISABLED = 0x00000001
+	ENDPOINT_SYSFX_ENABLED = iota
+	ENDPOINT_SYSFX_DISABLED
 )
 
 const (
@@ -93,10 +95,10 @@ const (
 )
 
 const (
-	ERender              = 0x0
-	ECapture             = 0x1
-	EAll                 = 0x2
-	EDataFlow_enum_count = 0x3
+	ERender = iota
+	ECapture
+	EAll
+	EDataFlow_enum_count
 )
 
 const (
