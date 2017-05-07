@@ -125,7 +125,7 @@ func captureSharedTimerDriven() (audio *WAVEFormat, err error) {
 	wfx.WFormatTag = 1
 	wfx.WBitsPerSample = 16
 	wfx.NSamplesPerSec = 48000
-	wfx.NBlockAlign = (wfx.WBitsPerSample / 8) * wfx.NChannels // 16 bit stereo is 32bit (4 byte) per sample
+	wfx.NBlockAlign = (wfx.WBitsPerSample / 8) * wfx.NChannels
 	wfx.NAvgBytesPerSec = wfx.NSamplesPerSec * uint32(wfx.NBlockAlign)
 	wfx.CbSize = 0
 
@@ -174,12 +174,14 @@ func captureSharedTimerDriven() (audio *WAVEFormat, err error) {
 	time.Sleep(capturingPeriod)
 
 	var data *byte
-	var output []byte
+	var availableFrameSize uint32
+	var flags uint32
+	var devicePosition uint64
+	var qcpPosition uint64
+	var b *byte
+	var padding uint32
+
 	for m := 0; m < 2000; m++ {
-		var availableFrameSize uint32
-		var flags uint32
-		var devicePosition uint64
-		var qcpPosition uint64
 		if err = acc.GetBuffer(&data, &availableFrameSize, &flags, &devicePosition, &qcpPosition); err != nil {
 			return
 		}
@@ -190,23 +192,21 @@ func captureSharedTimerDriven() (audio *WAVEFormat, err error) {
 		start := unsafe.Pointer(data)
 		lim := int(availableFrameSize) * int(wfx.NBlockAlign)
 		for n := 0; n < lim; n++ {
-			var b *byte
 			b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
-			output = append(output, *b)
+			audio.RawData = append(audio.RawData, *b)
 		}
 		audio.DataSize += uint32(lim)
-		var padding uint32
 		if err = ac.GetCurrentPadding(&padding); err != nil {
 			return
 		}
-		//capturingPeriod = time.Duration(1000000 * 1000 * int(availableFrameSize) / int(wfx.NSamplesPerSec))
-		capturingPeriod = time.Duration(1000000 * 1000 * int(bufferFrameSize-padding) / int(wfx.NSamplesPerSec))
-		time.Sleep(capturingPeriod / 2)
+		//capturingPeriod = time.Duration(1000000 * 1000 * int(bufferFrameSize-padding) / int(wfx.NSamplesPerSec))
+		//time.Sleep(capturingPeriod / 2)
+		time.Sleep(capturingPeriod)
 		if err = acc.ReleaseBuffer(availableFrameSize); err != nil {
 			return
 		}
 	}
-	audio.RawData = output
+	//audio.RawData = output
 
 	if err = ac.Stop(); err != nil {
 		return
