@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/signal"
 	"time"
 	"unsafe"
 
@@ -173,6 +174,7 @@ func captureSharedTimerDriven() (audio *WAVEFormat, err error) {
 
 	time.Sleep(capturingPeriod)
 
+	var isCapturing bool
 	var data *byte
 	var availableFrameSize uint32
 	var flags uint32
@@ -181,29 +183,43 @@ func captureSharedTimerDriven() (audio *WAVEFormat, err error) {
 	var b *byte
 	var padding uint32
 
-	for m := 0; m < 2000; m++ {
-		if err = acc.GetBuffer(&data, &availableFrameSize, &flags, &devicePosition, &qcpPosition); err != nil {
-			return
-		}
-		if availableFrameSize == 0 {
-			continue
-		}
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
+	isCapturing = true
 
-		start := unsafe.Pointer(data)
-		lim := int(availableFrameSize) * int(wfx.NBlockAlign)
-		for n := 0; n < lim; n++ {
-			b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
-			audio.RawData = append(audio.RawData, *b)
+	for {
+		if !isCapturing {
+			break
 		}
-		audio.DataSize += uint32(lim)
-		if err = ac.GetCurrentPadding(&padding); err != nil {
-			return
-		}
-		//capturingPeriod = time.Duration(1000000 * 1000 * int(bufferFrameSize-padding) / int(wfx.NSamplesPerSec))
-		//time.Sleep(capturingPeriod / 2)
-		time.Sleep(capturingPeriod)
-		if err = acc.ReleaseBuffer(availableFrameSize); err != nil {
-			return
+		select {
+		case <-signalChan:
+			fmt.Println("interrupted by signal")
+			isCapturing = false
+			break
+		default:
+			if err = acc.GetBuffer(&data, &availableFrameSize, &flags, &devicePosition, &qcpPosition); err != nil {
+				return
+			}
+			if availableFrameSize == 0 {
+				continue
+			}
+
+			start := unsafe.Pointer(data)
+			lim := int(availableFrameSize) * int(wfx.NBlockAlign)
+			for n := 0; n < lim; n++ {
+				b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
+				audio.RawData = append(audio.RawData, *b)
+			}
+			audio.DataSize += uint32(lim)
+			if err = ac.GetCurrentPadding(&padding); err != nil {
+				return
+			}
+			//capturingPeriod = time.Duration(1000000 * 1000 * int(bufferFrameSize-padding) / int(wfx.NSamplesPerSec))
+			//time.Sleep(capturingPeriod / 2)
+			time.Sleep(capturingPeriod)
+			if err = acc.ReleaseBuffer(availableFrameSize); err != nil {
+				return
+			}
 		}
 	}
 	//audio.RawData = output
