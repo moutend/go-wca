@@ -10,6 +10,8 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"time"
 	"unsafe"
 
@@ -24,7 +26,6 @@ type WAVEFormat struct {
 	AvgBytesPerSec uint32
 	BlockAlign     uint16
 	BitsPerSample  uint16
-	DataTag        [4]byte // 'data'
 	DataSize       uint32
 	RawData        []byte
 }
@@ -49,40 +50,73 @@ func (v *WAVEFormat) Bytes() (output []byte) {
 	return buf.Bytes()
 }
 
+type DurationFlag struct {
+	Value time.Duration
+}
+
+func (f *DurationFlag) Set(value string) (err error) {
+	var sec float64
+
+	if sec, err = strconv.ParseFloat(value, 64); err != nil {
+		return
+	}
+	f.Value = time.Duration(sec * float64(time.Second))
+	return
+}
+
+func (f *DurationFlag) String() string {
+	return "foo"
+}
+
+type FilenameFlag struct {
+	Value string
+}
+
+func (f *FilenameFlag) Set(value string) (err error) {
+	if !strings.HasSuffix(value, ".wav") {
+		err = fmt.Errorf("specify WAVE audio file (*.wav)")
+		return
+	}
+	f.Value = value
+	return
+}
+
+func (f *FilenameFlag) String() string {
+	return "bar"
+}
+
 func main() {
 	var err error
 	if err = run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-	return
 }
 
 func run(args []string) (err error) {
-	var durationFlag int64
-	var filenameFlag string
+	var durationFlag DurationFlag
+	var filenameFlag FilenameFlag
 	var audio *WAVEFormat
 
 	f := flag.NewFlagSet(args[0], flag.ExitOnError)
-	f.Int64Var(&durationFlag, "t", 0, "Specify recording time in millisecond")
-	f.StringVar(&filenameFlag, "f", "output.wav", "Specify file name to save (default is output.wav)")
+	f.Var(&durationFlag, "duration", "Specify recording duration in second")
+	f.Var(&durationFlag, "d", "Alias of --duration")
+	f.Var(&filenameFlag, "output", "file name")
+	f.Var(&filenameFlag, "o", "Alias of --output")
 	f.Parse(args[1:])
 
-	if durationFlag <= 0 {
+	if filenameFlag.Value == "" {
 		return
 	}
-	if audio, err = captureSharedTimerDriven(); err != nil {
+	if audio, err = captureSharedTimerDriven(durationFlag.Value); err != nil {
 		return
 	}
-	if err = ioutil.WriteFile(filenameFlag, audio.Bytes(), 0644); err != nil {
+	if err = ioutil.WriteFile(filenameFlag.Value, audio.Bytes(), 0644); err != nil {
 		return
 	}
-	fmt.Printf("Saved captured audio as %s\n", filenameFlag)
 	return
 }
 
-func captureSharedTimerDriven() (audio *WAVEFormat, err error) {
-	audio = &WAVEFormat{}
-
+func captureSharedTimerDriven(duration time.Duration) (audio *WAVEFormat, err error) {
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
@@ -122,7 +156,6 @@ func captureSharedTimerDriven() (audio *WAVEFormat, err error) {
 		return
 	}
 	defer ole.CoTaskMemFree(uintptr(unsafe.Pointer(wfx)))
-
 	wfx.WFormatTag = 1
 	wfx.WBitsPerSample = 16
 	wfx.NSamplesPerSec = 48000
@@ -130,6 +163,7 @@ func captureSharedTimerDriven() (audio *WAVEFormat, err error) {
 	wfx.NAvgBytesPerSec = wfx.NSamplesPerSec * uint32(wfx.NBlockAlign)
 	wfx.CbSize = 0
 
+	audio = &WAVEFormat{}
 	audio.Channels = wfx.NChannels
 	audio.SamplesPerSec = wfx.NSamplesPerSec
 	audio.AvgBytesPerSec = wfx.NAvgBytesPerSec
@@ -174,18 +208,18 @@ func captureSharedTimerDriven() (audio *WAVEFormat, err error) {
 
 	time.Sleep(capturingPeriod)
 
-	var isCapturing bool
+	var isCapturing bool = true
+	var currentDuration time.Duration
+	var b *byte
 	var data *byte
 	var availableFrameSize uint32
 	var flags uint32
 	var devicePosition uint64
 	var qcpPosition uint64
-	var b *byte
 	var padding uint32
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
-	isCapturing = true
 
 	for {
 		if !isCapturing {
@@ -193,10 +227,15 @@ func captureSharedTimerDriven() (audio *WAVEFormat, err error) {
 		}
 		select {
 		case <-signalChan:
-			fmt.Println("interrupted by signal")
+			fmt.Println("Interrupted by SIGINT")
 			isCapturing = false
 			break
 		default:
+			currentDuration = time.Duration(float64(audio.DataSize) / float64(audio.BitsPerSample/8) / float64(audio.Channels) / float64(audio.SamplesPerSec) * float64(time.Second))
+			if duration != 0 && currentDuration > duration {
+				isCapturing = false
+				break
+			}
 			if err = acc.GetBuffer(&data, &availableFrameSize, &flags, &devicePosition, &qcpPosition); err != nil {
 				return
 			}
@@ -206,6 +245,7 @@ func captureSharedTimerDriven() (audio *WAVEFormat, err error) {
 
 			start := unsafe.Pointer(data)
 			lim := int(availableFrameSize) * int(wfx.NBlockAlign)
+
 			for n := 0; n < lim; n++ {
 				b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
 				audio.RawData = append(audio.RawData, *b)
@@ -214,8 +254,6 @@ func captureSharedTimerDriven() (audio *WAVEFormat, err error) {
 			if err = ac.GetCurrentPadding(&padding); err != nil {
 				return
 			}
-			//capturingPeriod = time.Duration(1000000 * 1000 * int(bufferFrameSize-padding) / int(wfx.NSamplesPerSec))
-			//time.Sleep(capturingPeriod / 2)
 			time.Sleep(capturingPeriod)
 			if err = acc.ReleaseBuffer(availableFrameSize); err != nil {
 				return
