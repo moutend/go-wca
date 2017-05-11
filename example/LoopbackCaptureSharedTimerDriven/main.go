@@ -9,6 +9,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/signal"
+	"strconv"
+	"strings"
 	"time"
 	"unsafe"
 
@@ -16,22 +19,22 @@ import (
 	"github.com/moutend/go-wca"
 )
 
-type WAVEAudio struct {
+type WAVEFormat struct {
+	FormatTag      uint16
 	Channels       uint16
 	SamplesPerSec  uint32
 	AvgBytesPerSec uint32
 	BlockAlign     uint16
 	BitsPerSample  uint16
-	DataTag        [4]byte // 'data'
-	RawDataSize    uint32
+	DataSize       uint32
 	RawData        []byte
 }
 
-func (v *WAVEAudio) Bytes() (output []byte) {
+func (v *WAVEFormat) Bytes() (output []byte) {
 	buf := new(bytes.Buffer)
 
 	binary.Write(buf, binary.BigEndian, []byte("RIFF"))
-	binary.Write(buf, binary.LittleEndian, uint32(v.RawDataSize+36)) // Header size is 44 byte, so 44 - 8 = 36
+	binary.Write(buf, binary.LittleEndian, uint32(v.DataSize+36)) // Header size is 44 byte, so 44 - 8 = 36
 	binary.Write(buf, binary.BigEndian, []byte("WAVEfmt "))
 	binary.Write(buf, binary.LittleEndian, uint32(16)) // 16 (0x10000000) for PCM
 	binary.Write(buf, binary.LittleEndian, uint16(1))  // 1 (0x0001) for PCM
@@ -41,10 +44,45 @@ func (v *WAVEAudio) Bytes() (output []byte) {
 	binary.Write(buf, binary.LittleEndian, v.BlockAlign)
 	binary.Write(buf, binary.LittleEndian, v.BitsPerSample)
 	binary.Write(buf, binary.BigEndian, []byte("data"))
-	binary.Write(buf, binary.LittleEndian, v.RawDataSize)
+	binary.Write(buf, binary.LittleEndian, v.DataSize)
 	binary.Write(buf, binary.LittleEndian, v.RawData)
 
 	return buf.Bytes()
+}
+
+type DurationFlag struct {
+	Value time.Duration
+}
+
+func (f *DurationFlag) Set(value string) (err error) {
+	var sec float64
+
+	if sec, err = strconv.ParseFloat(value, 64); err != nil {
+		return
+	}
+	f.Value = time.Duration(sec * float64(time.Second))
+	return
+}
+
+func (f *DurationFlag) String() string {
+	return f.Value.String()
+}
+
+type FilenameFlag struct {
+	Value string
+}
+
+func (f *FilenameFlag) Set(value string) (err error) {
+	if !strings.HasSuffix(value, ".wav") {
+		err = fmt.Errorf("specify WAVE audio file (*.wav)")
+		return
+	}
+	f.Value = value
+	return
+}
+
+func (f *FilenameFlag) String() string {
+	return f.Value
 }
 
 func main() {
@@ -52,35 +90,34 @@ func main() {
 	if err = run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-	return
 }
 
 func run(args []string) (err error) {
-	var durationFlag int64
-	var filenameFlag string
-	var audio *WAVEAudio
+	var durationFlag DurationFlag
+	var filenameFlag FilenameFlag
+	var audio *WAVEFormat
 
 	f := flag.NewFlagSet(args[0], flag.ExitOnError)
-	f.Int64Var(&durationFlag, "t", 0, "Specify recording time in millisecond")
-	f.StringVar(&filenameFlag, "f", "output.wav", "Specify file name to save (default is output.wav)")
+	f.Var(&durationFlag, "duration", "Specify recording duration in second")
+	f.Var(&durationFlag, "d", "Alias of --duration")
+	f.Var(&filenameFlag, "output", "file name")
+	f.Var(&filenameFlag, "o", "Alias of --output")
 	f.Parse(args[1:])
 
-	if durationFlag <= 0 {
+	if filenameFlag.Value == "" {
 		return
 	}
-	if audio, err = capture(); err != nil {
+	if audio, err = loopbackCaptureSharedTimerDriven(durationFlag.Value); err != nil {
 		return
 	}
-	if err = ioutil.WriteFile(filenameFlag, audio.Bytes(), 0644); err != nil {
+	if err = ioutil.WriteFile(filenameFlag.Value, audio.Bytes(), 0644); err != nil {
 		return
 	}
-	fmt.Printf("Saved captured audio as %s\n", filenameFlag)
+	fmt.Println("Successfully done")
 	return
 }
 
-func capture() (audio *WAVEAudio, err error) {
-	audio = &WAVEAudio{}
-
+func loopbackCaptureSharedTimerDriven(duration time.Duration) (audio *WAVEFormat, err error) {
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
@@ -107,7 +144,7 @@ func capture() (audio *WAVEAudio, err error) {
 	if err = ps.GetValue(&wca.PKEY_Device_FriendlyName, &pv); err != nil {
 		return
 	}
-	fmt.Printf("Capturing what you hear from\n%s\n", pv.String())
+	fmt.Printf("Recording what you hear from: %s\n", pv.String())
 
 	var ac *wca.IAudioClient
 	if err = mmd.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &ac); err != nil {
@@ -129,6 +166,7 @@ func capture() (audio *WAVEAudio, err error) {
 	wfx.NAvgBytesPerSec = wfx.NSamplesPerSec * uint32(wfx.NBlockAlign)
 	wfx.CbSize = 0
 
+	audio = &WAVEFormat{}
 	audio.Channels = wfx.NChannels
 	audio.SamplesPerSec = wfx.NSamplesPerSec
 	audio.AvgBytesPerSec = wfx.NAvgBytesPerSec
@@ -169,48 +207,70 @@ func capture() (audio *WAVEAudio, err error) {
 	if err = ac.Start(); err != nil {
 		return
 	}
-	fmt.Println("Start capturing loopback audio")
-
+	fmt.Println("Start capturing loopback audio with shared-timer-driven mode")
+	if duration <= 0 {
+		fmt.Println("Press Ctrl-C to stop capturing")
+	}
 	time.Sleep(capturingPeriod)
 
+	var isCapturing bool = true
+	var currentDuration time.Duration
 	var data *byte
-	var output []byte
-	for m := 0; m < 2000; m++ {
-		var availableFrameSize uint32
-		var flags uint32
-		var devicePosition uint64
-		var qcpPosition uint64
-		if err = acc.GetBuffer(&data, &availableFrameSize, &flags, &devicePosition, &qcpPosition); err != nil {
-			return
-		}
-		if availableFrameSize == 0 {
-			continue
-		}
+	var b *byte
+	var availableFrameSize uint32
+	var flags uint32
+	var devicePosition uint64
+	var qcpPosition uint64
+	var padding uint32
 
-		start := unsafe.Pointer(data)
-		lim := int(availableFrameSize) * int(wfx.NBlockAlign)
-		for n := 0; n < lim; n++ {
-			var b *byte
-			b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
-			output = append(output, *b)
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
+
+	for {
+		if !isCapturing {
+			break
 		}
-		audio.RawDataSize += uint32(lim)
-		var padding uint32
-		if err = ac.GetCurrentPadding(&padding); err != nil {
-			return
-		}
-		//capturingPeriod = time.Duration(1000000 * 1000 * int(availableFrameSize) / int(wfx.NSamplesPerSec))
-		capturingPeriod = time.Duration(1000000 * 1000 * int(bufferFrameSize-padding) / int(wfx.NSamplesPerSec))
-		time.Sleep(capturingPeriod / 2)
-		if err = acc.ReleaseBuffer(availableFrameSize); err != nil {
-			return
+		select {
+		case <-signalChan:
+			fmt.Println("Interrupted by SIGINT")
+			isCapturing = false
+			break
+		default:
+			currentDuration = time.Duration(float64(audio.DataSize) / float64(audio.BitsPerSample/8) / float64(audio.Channels) / float64(audio.SamplesPerSec) * float64(time.Second))
+			if duration != 0 && currentDuration > duration {
+				isCapturing = false
+				break
+			}
+			if err = acc.GetBuffer(&data, &availableFrameSize, &flags, &devicePosition, &qcpPosition); err != nil {
+				return
+			}
+			if availableFrameSize == 0 {
+				continue
+			}
+
+			start := unsafe.Pointer(data)
+			lim := int(availableFrameSize) * int(wfx.NBlockAlign)
+
+			for n := 0; n < lim; n++ {
+				b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
+				audio.RawData = append(audio.RawData, *b)
+			}
+			audio.DataSize += uint32(lim)
+			if err = ac.GetCurrentPadding(&padding); err != nil {
+				return
+			}
+			//capturingPeriod = time.Duration(1000000 * 1000 * int(bufferFrameSize-padding) / int(wfx.NSamplesPerSec))
+			capturingPeriod = time.Duration(float64(bufferFrameSize-padding) / float64(wfx.NSamplesPerSec) * float64(time.Second))
+			time.Sleep(capturingPeriod / 2)
+			if err = acc.ReleaseBuffer(availableFrameSize); err != nil {
+				return
+			}
 		}
 	}
-	audio.RawData = output
 
+	fmt.Println("Stop capturing")
 	if err = ac.Stop(); err != nil {
 		return
 	}
-	fmt.Println("Stopping capturing loopback audio")
 	return
 }
