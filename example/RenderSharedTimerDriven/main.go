@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"time"
 	"unsafe"
 
@@ -24,9 +25,25 @@ type WAVEFormat struct {
 	AvgBytesPerSec uint32
 	BlockAlign     uint16
 	BitsPerSample  uint16
-	DataTag        [4]byte // 'data'
 	DataSize       uint32
 	RawData        []byte
+}
+
+type FilenameFlag struct {
+	Value string
+}
+
+func (f *FilenameFlag) Set(value string) (err error) {
+	if !strings.HasSuffix(value, ".wav") {
+		err = fmt.Errorf("specify WAVE audio file (*.wav)")
+		return
+	}
+	f.Value = value
+	return
+}
+
+func (f *FilenameFlag) String() string {
+	return f.Value
 }
 
 func readFile(filename string) (audio *WAVEFormat, err error) {
@@ -43,7 +60,6 @@ func readFile(filename string) (audio *WAVEFormat, err error) {
 	binary.Read(io.NewSectionReader(reader, 28, 4), binary.LittleEndian, &audio.AvgBytesPerSec)
 	binary.Read(io.NewSectionReader(reader, 32, 2), binary.LittleEndian, &audio.BlockAlign)
 	binary.Read(io.NewSectionReader(reader, 34, 2), binary.LittleEndian, &audio.BitsPerSample)
-	binary.Read(io.NewSectionReader(reader, 36, 4), binary.LittleEndian, &audio.DataTag)
 	binary.Read(io.NewSectionReader(reader, 40, 4), binary.LittleEndian, &audio.DataSize)
 
 	buf := new(bytes.Buffer)
@@ -61,20 +77,21 @@ func main() {
 	if err = run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-	return
 }
+
 func run(args []string) (err error) {
-	var filenameFlag string
+	var filenameFlag FilenameFlag
 	var audio *WAVEFormat
 
 	f := flag.NewFlagSet(args[0], flag.ExitOnError)
-	f.StringVar(&filenameFlag, "f", "", "Specify WAVE format audio (e.g. music.wav)")
+	f.Var(&filenameFlag, "input", "Specify WAVE format audio (e.g. music.wav)")
+	f.Var(&filenameFlag, "i", "Alias of --input")
 	f.Parse(args[1:])
 
-	if filenameFlag == "" {
+	if filenameFlag.Value == "" {
 		return
 	}
-	if audio, err = readFile(filenameFlag); err != nil {
+	if audio, err = readFile(filenameFlag.Value); err != nil {
 		return
 	}
 	return renderSharedTimerDriven(audio)
