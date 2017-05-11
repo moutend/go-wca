@@ -65,7 +65,7 @@ func (f *DurationFlag) Set(value string) (err error) {
 }
 
 func (f *DurationFlag) String() string {
-	return "foo"
+	return f.Value.String()
 }
 
 type FilenameFlag struct {
@@ -82,7 +82,7 @@ func (f *FilenameFlag) Set(value string) (err error) {
 }
 
 func (f *FilenameFlag) String() string {
-	return "bar"
+	return f.Value
 }
 
 func main() {
@@ -113,6 +113,7 @@ func run(args []string) (err error) {
 	if err = ioutil.WriteFile(filenameFlag.Value, audio.Bytes(), 0644); err != nil {
 		return
 	}
+	fmt.Println("Successfully done")
 	return
 }
 
@@ -143,7 +144,7 @@ func captureSharedTimerDriven(duration time.Duration) (audio *WAVEFormat, err er
 	if err = ps.GetValue(&wca.PKEY_Device_FriendlyName, &pv); err != nil {
 		return
 	}
-	fmt.Printf("capturing from\n%s\n", pv.String())
+	fmt.Printf("Capturing audio from: %s\n", pv.String())
 
 	var ac *wca.IAudioClient
 	if err = mmd.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &ac); err != nil {
@@ -185,7 +186,7 @@ func captureSharedTimerDriven(duration time.Duration) (audio *WAVEFormat, err er
 	capturingPeriod = time.Duration(int(defaultPeriod) * 100)
 	fmt.Printf("Default capturing period: %d ms\n", capturingPeriod/time.Millisecond)
 
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, 0, 250*10000, 0, wfx, nil); err != nil {
+	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, 0, 200*10000, 0, wfx, nil); err != nil {
 		return
 	}
 
@@ -204,8 +205,10 @@ func captureSharedTimerDriven(duration time.Duration) (audio *WAVEFormat, err er
 	if err = ac.Start(); err != nil {
 		return
 	}
-	fmt.Println("Start capturing loopback audio")
-
+	fmt.Println("Start capturing audio with shared-timer-driven mode")
+	if duration <= 0 {
+		fmt.Println("Press Ctrl-C to stop capturing")
+	}
 	time.Sleep(capturingPeriod)
 
 	var isCapturing bool = true
@@ -260,11 +263,10 @@ func captureSharedTimerDriven(duration time.Duration) (audio *WAVEFormat, err er
 			}
 		}
 	}
-	//audio.RawData = output
 
+	fmt.Println("Stop capturing")
 	if err = ac.Stop(); err != nil {
 		return
 	}
-	fmt.Println("Stopping capturing loopback audio")
 	return
 }
