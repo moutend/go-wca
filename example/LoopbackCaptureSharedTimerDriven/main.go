@@ -144,7 +144,7 @@ func loopbackCaptureSharedTimerDriven(duration time.Duration) (audio *WAVEFormat
 	if err = ps.GetValue(&wca.PKEY_Device_FriendlyName, &pv); err != nil {
 		return
 	}
-	fmt.Printf("Recording what you hear from: %s\n", pv.String())
+	fmt.Printf("Capturing what you hear from: %s\n", pv.String())
 
 	var ac *wca.IAudioClient
 	if err = mmd.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &ac); err != nil {
@@ -188,7 +188,7 @@ func loopbackCaptureSharedTimerDriven(duration time.Duration) (audio *WAVEFormat
 	capturingPeriod = time.Duration(int(defaultPeriod) * 100)
 	fmt.Printf("Default capturing period: %d ms\n", capturingPeriod/time.Millisecond)
 
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_LOOPBACK, 500*10000, 0, wfx, nil); err != nil {
+	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_LOOPBACK, 200*10000, 0, wfx, nil); err != nil {
 		return
 	}
 
