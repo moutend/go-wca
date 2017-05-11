@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/signal"
 	"strings"
 	"time"
 	"unsafe"
@@ -94,7 +95,11 @@ func run(args []string) (err error) {
 	if audio, err = readFile(filenameFlag.Value); err != nil {
 		return
 	}
-	return renderSharedTimerDriven(audio)
+	if err = renderSharedTimerDriven(audio); err != nil {
+		return
+	}
+	fmt.Println("Successfully done")
+	return
 }
 
 func renderSharedTimerDriven(audio *WAVEFormat) (err error) {
@@ -124,7 +129,7 @@ func renderSharedTimerDriven(audio *WAVEFormat) (err error) {
 	if err = ps.GetValue(&wca.PKEY_Device_FriendlyName, &pv); err != nil {
 		return
 	}
-	fmt.Printf("Capturing what you hear from\n%s\n", pv.String())
+	fmt.Printf("Rendering audio to: %s\n", pv.String())
 
 	var ac *wca.IAudioClient
 	if err = mmd.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &ac); err != nil {
@@ -156,14 +161,14 @@ func renderSharedTimerDriven(audio *WAVEFormat) (err error) {
 
 	var defaultPeriod int64
 	var minimumPeriod int64
-	var capturingPeriod time.Duration
+	var renderingPeriod time.Duration
 	if err = ac.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
 	}
-	capturingPeriod = time.Duration(int(defaultPeriod) * 100)
-	fmt.Printf("Default capturing period: %d ms\n", capturingPeriod/time.Millisecond)
+	renderingPeriod = time.Duration(int(defaultPeriod) * 100)
+	fmt.Printf("Default rendering period: %d ms\n", renderingPeriod/time.Millisecond)
 
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, 0, 500*10000, 0, wfx, nil); err != nil {
+	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, 0, 200*10000, 0, wfx, nil); err != nil {
 		return
 	}
 
@@ -183,48 +188,66 @@ func renderSharedTimerDriven(audio *WAVEFormat) (err error) {
 		return
 	}
 	fmt.Println("Start rendering audio with shared-timer-driven mode")
+	fmt.Println("Press Ctrl-C to stop rendering")
 
-	time.Sleep(capturingPeriod)
+	time.Sleep(renderingPeriod)
 
 	var data *byte
 	var offset int
+	var padding uint32
+	var availableFrameSize uint32
+	var b *byte
+	var isPlaying bool = true
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
+
 	for {
-		if offset >= int(audio.DataSize) {
+		if !isPlaying {
 			break
 		}
-		var padding uint32
-		var availableFrameSize uint32
-		if err = ac.GetCurrentPadding(&padding); err != nil {
-			return
+		select {
+		case <-signalChan:
+			fmt.Println("Interrupted by SIGINT")
+			isPlaying = false
+			break
+		default:
+			if offset >= int(audio.DataSize) {
+				isPlaying = false
+				break
+			}
+			if err = ac.GetCurrentPadding(&padding); err != nil {
+				return
+			}
+			availableFrameSize = bufferFrameSize - padding
+			if availableFrameSize == 0 {
+				continue
+			}
+			if err = arc.GetBuffer(availableFrameSize, &data); err != nil {
+				return
+			}
+
+			start := unsafe.Pointer(data)
+			lim := int(availableFrameSize) * int(wfx.NBlockAlign)
+			remaining := int(audio.DataSize) - offset
+			if remaining < lim {
+				lim = remaining
+			}
+			for n := 0; n < lim; n++ {
+				b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
+				*b = audio.RawData[offset+n]
+			}
+			offset += lim
+			if err = arc.ReleaseBuffer(availableFrameSize, 0); err != nil {
+				return
+			}
+			time.Sleep(renderingPeriod)
 		}
-		availableFrameSize = bufferFrameSize - padding
-		if availableFrameSize == 0 {
-			continue
-		}
-		if err = arc.GetBuffer(availableFrameSize, &data); err != nil {
-			return
-		}
-		start := unsafe.Pointer(data)
-		lim := int(availableFrameSize) * int(wfx.NBlockAlign)
-		remaining := int(audio.DataSize) - offset
-		if remaining < lim {
-			lim = remaining
-		}
-		var b *byte
-		for n := 0; n < lim; n++ {
-			b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
-			*b = audio.RawData[offset+n]
-		}
-		offset += lim
-		if err = arc.ReleaseBuffer(availableFrameSize, 0); err != nil {
-			return
-		}
-		time.Sleep(80 * time.Millisecond)
 	}
 
 	if err = ac.Stop(); err != nil {
 		return
 	}
-	fmt.Println("Stopping capturing loopback audio")
+	fmt.Println("Stop rendering loopback audio")
 	return
 }
