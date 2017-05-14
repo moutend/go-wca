@@ -3,6 +3,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"flag"
 	"fmt"
@@ -95,14 +96,28 @@ func run(args []string) (err error) {
 	if audio, err = readFile(filenameFlag.Value); err != nil {
 		return
 	}
-	if err = renderSharedTimerDriven(audio); err != nil {
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		select {
+		case <-signalChan:
+			fmt.Println("Interrupted by SIGINT")
+			cancel()
+		}
+		return
+	}()
+
+	if err = renderSharedTimerDriven(ctx, audio); err != nil {
 		return
 	}
 	fmt.Println("Successfully done")
 	return
 }
 
-func renderSharedTimerDriven(audio *WAVEFormat) (err error) {
+func renderSharedTimerDriven(ctx context.Context, audio *WAVEFormat) (err error) {
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
@@ -199,16 +214,12 @@ func renderSharedTimerDriven(audio *WAVEFormat) (err error) {
 	var b *byte
 	var isPlaying bool = true
 
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt)
-
 	for {
 		if !isPlaying {
 			break
 		}
 		select {
-		case <-signalChan:
-			fmt.Println("Interrupted by SIGINT")
+		case <-ctx.Done():
 			isPlaying = false
 			break
 		default:
