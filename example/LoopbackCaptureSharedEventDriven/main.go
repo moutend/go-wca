@@ -137,26 +137,26 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 		return
 	}
 
-	var mmde *wca.IMMDeviceEnumerator
-	if err = wca.CoCreateInstance(wca.CLSID_MMDeviceEnumerator, 0, wca.CLSCTX_ALL, wca.IID_IMMDeviceEnumerator, &mmde); err != nil {
+	var mmdCapturee *wca.IMMDeviceEnumerator
+	if err = wca.CoCreateInstance(wca.CLSID_MMDeviceEnumerator, 0, wca.CLSCTX_ALL, wca.IID_IMMDeviceEnumerator, &mmdCapturee); err != nil {
 		return
 	}
-	defer mmde.Release()
+	defer mmdCapturee.Release()
 
-	var mmd *wca.IMMDevice
-	if err = mmde.GetDefaultAudioEndpoint(wca.ERender, wca.EConsole, &mmd); err != nil {
+	var mmdCapture *wca.IMMDevice
+	if err = mmdCapturee.GetDefaultAudioEndpoint(wca.ERender, wca.EConsole, &mmdCapture); err != nil {
 		return
 	}
-	defer mmd.Release()
+	defer mmdCapture.Release()
 
-	var mmdR *wca.IMMDevice
-	if err = mmde.GetDefaultAudioEndpoint(wca.ERender, wca.EConsole, &mmdR); err != nil {
+	var mmdRender *wca.IMMDevice
+	if err = mmdCapturee.GetDefaultAudioEndpoint(wca.ERender, wca.EConsole, &mmdRender); err != nil {
 		return
 	}
-	defer mmdR.Release()
+	defer mmdRender.Release()
 
 	var ps *wca.IPropertyStore
-	if err = mmd.OpenPropertyStore(wca.STGM_READ, &ps); err != nil {
+	if err = mmdCapture.OpenPropertyStore(wca.STGM_READ, &ps); err != nil {
 		return
 	}
 	defer ps.Release()
@@ -167,20 +167,20 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	}
 	fmt.Printf("Capturing audio from: %s\n", pv.String())
 
-	var ac *wca.IAudioClient
-	if err = mmd.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &ac); err != nil {
+	var acCapture *wca.IAudioClient
+	if err = mmdCapture.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &acCapture); err != nil {
 		return
 	}
-	defer ac.Release()
+	defer acCapture.Release()
 
-	var acR *wca.IAudioClient
-	if err = mmdR.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &acR); err != nil {
+	var acRender *wca.IAudioClient
+	if err = mmdRender.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &acRender); err != nil {
 		return
 	}
-	defer acR.Release()
+	defer acRender.Release()
 
 	var wfx *wca.WAVEFORMATEX
-	if err = ac.GetMixFormat(&wfx); err != nil {
+	if err = acCapture.GetMixFormat(&wfx); err != nil {
 		return
 	}
 	defer ole.CoTaskMemFree(uintptr(unsafe.Pointer(wfx)))
@@ -189,7 +189,7 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	wfx.NChannels = 2
 	wfx.NSamplesPerSec = 44100
 	wfx.WBitsPerSample = 16
-	wfx.NBlockAlign = (wfx.WBitsPerSample / 8) * wfx.NChannels // 16 bit stereo is 32bit (4 byte) per sample
+	wfx.NBlockAlign = (wfx.WBitsPerSample / 8) * wfx.NChannels
 	wfx.NAvgBytesPerSec = wfx.NSamplesPerSec * uint32(wfx.NBlockAlign)
 	wfx.CbSize = 0
 
@@ -209,16 +209,16 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	var defaultPeriod int64
 	var minimumPeriod int64
 	var capturingPeriod time.Duration
-	if err = ac.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
+	if err = acCapture.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
 	}
 	capturingPeriod = time.Duration(int(defaultPeriod) * 100)
 	fmt.Printf("Default capturing period: %d ms\n", capturingPeriod/time.Millisecond)
 
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK|wca.AUDCLNT_STREAMFLAGS_LOOPBACK, 200*10000, 0, wfx, nil); err != nil {
+	if err = acCapture.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK|wca.AUDCLNT_STREAMFLAGS_LOOPBACK, 200*10000, 0, wfx, nil); err != nil {
 		return
 	}
-	if err = acR.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK, 200*10000, 0, wfx, nil); err != nil {
+	if err = acRender.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK, 200*10000, 0, wfx, nil); err != nil {
 		return
 	}
 
@@ -227,36 +227,36 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 
 	fakeAudioReadyEvent := wca.CreateEventExA(0, 0, 0, wca.EVENT_MODIFY_STATE|wca.SYNCHRONIZE)
 	defer wca.CloseHandle(fakeAudioReadyEvent)
-	if err = ac.SetEventHandle(fakeAudioReadyEvent); err != nil {
+	if err = acCapture.SetEventHandle(fakeAudioReadyEvent); err != nil {
 		return
 	}
-	if err = acR.SetEventHandle(audioReadyEvent); err != nil {
+	if err = acRender.SetEventHandle(audioReadyEvent); err != nil {
 		return
 	}
 
 	var bufferFrameSize uint32
-	if err = ac.GetBufferSize(&bufferFrameSize); err != nil {
+	if err = acCapture.GetBufferSize(&bufferFrameSize); err != nil {
 		return
 	}
 	fmt.Printf("Allocated buffer size: %d\n", bufferFrameSize)
 
 	var arc *wca.IAudioRenderClient
-	if err = acR.GetService(wca.IID_IAudioRenderClient, &arc); err != nil {
+	if err = acRender.GetService(wca.IID_IAudioRenderClient, &arc); err != nil {
 		return
 	}
 	defer arc.Release()
 
 	var acc *wca.IAudioCaptureClient
-	if err = ac.GetService(wca.IID_IAudioCaptureClient, &acc); err != nil {
+	if err = acCapture.GetService(wca.IID_IAudioCaptureClient, &acc); err != nil {
 		return
 	}
 	defer acc.Release()
 
-	if err = acR.Start(); err != nil {
+	if err = acRender.Start(); err != nil {
 		return
 	}
 	fmt.Println("foo")
-	if err = ac.Start(); err != nil {
+	if err = acCapture.Start(); err != nil {
 		return
 	}
 
@@ -274,7 +274,6 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	var flags uint32
 	var devicePosition uint64
 	var qcpPosition uint64
-	//var padding uint32
 
 	errorChan := make(chan error, 1)
 
@@ -316,12 +315,7 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 				audio.RawData = append(audio.RawData, *b)
 			}
 			audio.DataSize += uint32(lim)
-			//if err = ac.GetCurrentPadding(&padding); err != nil {
-			//	return
-			//}
-			//capturingPeriod = time.Duration(1000000 * 1000 * int(bufferFrameSize-padding) / int(wfx.NSamplesPerSec))
-			//capturingPeriod = time.Duration(float64(bufferFrameSize-padding) / float64(wfx.NSamplesPerSec) * float64(time.Second))
-			//time.Sleep(capturingPeriod / 2)
+
 			if err = acc.ReleaseBuffer(availableFrameSize); err != nil {
 				return
 			}
@@ -329,13 +323,12 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	}
 
 	fmt.Println("Stop capturing")
-	if err = ac.Stop(); err != nil {
+	if err = acCapture.Stop(); err != nil {
 		return
 	}
-	if err = acR.Stop(); err != nil {
+	if err = acRender.Stop(); err != nil {
 		return
 	}
-
 	return
 }
 
