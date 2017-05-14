@@ -3,6 +3,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"flag"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 	"unsafe"
 
@@ -25,41 +27,34 @@ type WAVEFormat struct {
 	AvgBytesPerSec uint32
 	BlockAlign     uint16
 	BitsPerSample  uint16
-	DataTag        [4]byte // 'data'
 	DataSize       uint32
 	RawData        []byte
 }
 
-func main() {
-	var err error
-	if err = run(os.Args); err != nil {
-		log.Fatal(err)
+type FilenameFlag struct {
+	Value string
+}
+
+func (f *FilenameFlag) Set(value string) (err error) {
+	if !strings.HasSuffix(value, ".wav") {
+		err = fmt.Errorf("specify WAVE audio file (*.wav)")
+		return
 	}
+	f.Value = value
 	return
 }
 
-func run(args []string) (err error) {
-	var filenameFlag string
-	var audio WAVEFormat
-
-	f := flag.NewFlagSet(args[0], flag.ExitOnError)
-	f.StringVar(&filenameFlag, "f", "", "Specify WAVE format audio (e.g. music.wav)")
-	f.Parse(args[1:])
-
-	if filenameFlag == "" {
-		return
-	}
-	if audio, err = readFile(filenameFlag); err != nil {
-		return
-	}
-	return render(audio)
+func (f *FilenameFlag) String() string {
+	return f.Value
 }
 
-func readFile(filename string) (audio WAVEFormat, err error) {
+func readFile(filename string) (audio *WAVEFormat, err error) {
 	var file []byte
 	if file, err = ioutil.ReadFile(filename); err != nil {
 		return
 	}
+
+	audio = &WAVEFormat{}
 	reader := bytes.NewReader(file)
 	binary.Read(io.NewSectionReader(reader, 20, 2), binary.LittleEndian, &audio.FormatTag)
 	binary.Read(io.NewSectionReader(reader, 22, 2), binary.LittleEndian, &audio.Channels)
@@ -67,7 +62,6 @@ func readFile(filename string) (audio WAVEFormat, err error) {
 	binary.Read(io.NewSectionReader(reader, 28, 4), binary.LittleEndian, &audio.AvgBytesPerSec)
 	binary.Read(io.NewSectionReader(reader, 32, 2), binary.LittleEndian, &audio.BlockAlign)
 	binary.Read(io.NewSectionReader(reader, 34, 2), binary.LittleEndian, &audio.BitsPerSample)
-	binary.Read(io.NewSectionReader(reader, 36, 4), binary.LittleEndian, &audio.DataTag)
 	binary.Read(io.NewSectionReader(reader, 40, 4), binary.LittleEndian, &audio.DataSize)
 
 	buf := new(bytes.Buffer)
@@ -80,19 +74,48 @@ func readFile(filename string) (audio WAVEFormat, err error) {
 	return
 }
 
-func render(audio WAVEFormat) (err error) {
+func main() {
+	var err error
+	if err = run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run(args []string) (err error) {
+	var filenameFlag FilenameFlag
+	var audio *WAVEFormat
+
+	f := flag.NewFlagSet(args[0], flag.ExitOnError)
+	f.Var(&filenameFlag, "input", "Specify WAVE format audio (e.g. music.wav)")
+	f.Var(&filenameFlag, "i", "Alias of --input")
+	f.Parse(args[1:])
+
+	if filenameFlag.Value == "" {
+		return
+	}
+	if audio, err = readFile(filenameFlag.Value); err != nil {
+		return
+	}
+	if err = renderSharedEventDriven(audio); err != nil {
+		return
+	}
+	fmt.Println("Successfully done")
+	return
+}
+
+func renderSharedEventDriven(audio *WAVEFormat) (err error) {
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
 
-	var de *wca.IMMDeviceEnumerator
-	if err = wca.CoCreateInstance(wca.CLSID_MMDeviceEnumerator, 0, wca.CLSCTX_ALL, wca.IID_IMMDeviceEnumerator, &de); err != nil {
+	var mmde *wca.IMMDeviceEnumerator
+	if err = wca.CoCreateInstance(wca.CLSID_MMDeviceEnumerator, 0, wca.CLSCTX_ALL, wca.IID_IMMDeviceEnumerator, &mmde); err != nil {
 		return
 	}
-	defer de.Release()
+	defer mmde.Release()
 
 	var mmd *wca.IMMDevice
-	if err = de.GetDefaultAudioEndpoint(wca.ERender, wca.EConsole, &mmd); err != nil {
+	if err = mmde.GetDefaultAudioEndpoint(wca.ERender, wca.EConsole, &mmd); err != nil {
 		return
 	}
 	defer mmd.Release()
@@ -107,7 +130,7 @@ func render(audio WAVEFormat) (err error) {
 	if err = ps.GetValue(&wca.PKEY_Device_FriendlyName, &pv); err != nil {
 		return
 	}
-	fmt.Printf("Rendering audio to %s\n", pv.String())
+	fmt.Printf("Rendering audio to: %s\n", pv.String())
 
 	var ac *wca.IAudioClient
 	if err = mmd.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &ac); err != nil {
@@ -120,7 +143,6 @@ func render(audio WAVEFormat) (err error) {
 		return
 	}
 	defer ole.CoTaskMemFree(uintptr(unsafe.Pointer(wfx)))
-
 	if wfx.WFormatTag != wca.WAVE_FORMAT_PCM {
 		wfx.WFormatTag = 1
 		wfx.NSamplesPerSec = audio.SamplesPerSec
@@ -131,6 +153,7 @@ func render(audio WAVEFormat) (err error) {
 		wfx.CbSize = 0
 	}
 
+	fmt.Printf("%+v\n", wfx)
 	fmt.Println("--------")
 	fmt.Printf("Format: PCM %d bit signed integer\n", wfx.WBitsPerSample)
 	fmt.Printf("Rate: %d Hz\n", wfx.NSamplesPerSec)
@@ -146,12 +169,12 @@ func render(audio WAVEFormat) (err error) {
 	renderingPeriod = time.Duration(defaultPeriod * 100)
 	fmt.Printf("Default rendering period: %d ms\n", renderingPeriod/time.Millisecond)
 
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK, 500*10000, 0, wfx, nil); err != nil {
+	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK, 200*10000, 0, wfx, nil); err != nil {
 		return
 	}
-
 	audioReadyEvent := wca.CreateEventExA(0, 0, 0, wca.EVENT_MODIFY_STATE|wca.SYNCHRONIZE)
 	defer wca.CloseHandle(audioReadyEvent)
+
 	if err = ac.SetEventHandle(audioReadyEvent); err != nil {
 		return
 	}
@@ -168,107 +191,111 @@ func render(audio WAVEFormat) (err error) {
 	}
 	defer arc.Release()
 
-	doneChan := make(chan struct{}, 1)
-	notificationChan, errorChan := watchEvent(doneChan, audioReadyEvent)
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt)
-
 	if err = ac.Start(); err != nil {
 		return
 	}
-	fmt.Println("Start rendering WAVE format audio with shared-event-driven mode")
-
+	fmt.Println("Start rendering audio with shared-event-driven mode")
+	fmt.Println("Press Ctrl-C to stop")
+	var b *byte
 	var data *byte
 	var offset int
+	var isPlaying bool = true
+	var padding uint32
+	var availableFrameSize uint32
+
+	ctx, cancel := context.WithCancel(context.Background())
+	errorChan := make(chan error, 1)
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
+
 	for {
-		if offset >= int(audio.DataSize) {
+		if !isPlaying {
+			cancel()
+			close(errorChan)
 			break
 		}
+		go func() {
+			errorChan <- watchEvent(ctx, audioReadyEvent)
+		}()
 		select {
 		case <-signalChan:
-			return
-		case <-notificationChan:
-			var padding uint32
-			var availableFrameSize uint32
+			isPlaying = false
+			<-errorChan
+			break
+		case err = <-errorChan:
+			if err != nil {
+				isPlaying = false
+				break
+			}
+			if offset >= int(audio.DataSize) {
+				isPlaying = false
+				break
+			}
 			if err = ac.GetCurrentPadding(&padding); err != nil {
 				return
 			}
-			availableFrameSize = bufferFrameSize - padding
-			if availableFrameSize == 0 {
+			if availableFrameSize = bufferFrameSize - padding; availableFrameSize == 0 {
 				continue
 			}
 			if err = arc.GetBuffer(availableFrameSize, &data); err != nil {
 				return
 			}
+
 			start := unsafe.Pointer(data)
 			lim := int(availableFrameSize) * int(wfx.NBlockAlign)
 			remaining := int(audio.DataSize) - offset
+
 			if remaining < lim {
 				lim = remaining
 			}
-			var b *byte
 			for n := 0; n < lim; n++ {
 				b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
 				*b = audio.RawData[offset+n]
 			}
+
 			offset += lim
+
 			if err = arc.ReleaseBuffer(availableFrameSize, 0); err != nil {
 				return
 			}
-		case err = <-errorChan:
-			fmt.Println("error event received")
-			return
 		}
 	}
-	close(doneChan)
-	if err = <-errorChan; err != nil {
+	if err != nil {
 		return
 	}
+
 	if err = ac.Stop(); err != nil {
 		return
 	}
-	fmt.Println("Stop rendering WAVE format audio")
+	fmt.Println("Stop rendering")
 	return
 }
 
-func watchEvent(doneChan <-chan struct{}, audioReadyEvent uintptr) (notificationChan chan struct{}, errorChan chan error) {
-	notificationChan = make(chan struct{}, 1)
-	errorChan = make(chan error, 1)
-
+func watchEvent(ctx context.Context, event uintptr) (err error) {
+	errorChan := make(chan error, 1)
 	go func() {
-		var err error
-		// Initialize COM
-		if err = ole.CoInitializeEx(0, ole.COINIT_MULTITHREADED); err != nil {
-			errorChan <- err
-			close(notificationChan)
-			close(errorChan)
-			return
-		}
-		fmt.Println("Success initializing event")
-		for {
-			select {
-			case <-doneChan:
-				// Uninitialize
-				fmt.Println("Uninitializing event")
-				ole.CoUninitialize()
-				errorChan <- nil
-				close(notificationChan)
-				close(errorChan)
-				return
-			default:
-				// Wait audio ready event.
-				dw := wca.WaitForSingleObject(audioReadyEvent, wca.INFINITE)
-				if dw != 0 {
-					errorChan <- fmt.Errorf("unexpected error during event emmiting")
-					close(notificationChan)
-					close(errorChan)
-					return
-				}
-				//fmt.Println("Emitting event")
-				notificationChan <- struct{}{}
-			}
-		}
-		return
+		errorChan <- eventEmitter(event)
 	}()
-	return notificationChan, errorChan
+	select {
+	case err = <-errorChan:
+		close(errorChan)
+		return
+	case <-ctx.Done():
+		fmt.Println("canceled by parent context")
+		err = ctx.Err()
+		return
+	}
+	return
+}
+
+func eventEmitter(event uintptr) (err error) {
+	//if err = ole.CoInitializeEx(0, ole.COINIT_MULTITHREADED); err != nil {
+	//	return
+	//}
+	dw := wca.WaitForSingleObject(event, wca.INFINITE)
+	if dw != 0 {
+		return fmt.Errorf("failed to watch event")
+	}
+	//ole.CoUninitialize()
+	return
 }
