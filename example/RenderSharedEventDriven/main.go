@@ -96,14 +96,27 @@ func run(args []string) (err error) {
 	if audio, err = readFile(filenameFlag.Value); err != nil {
 		return
 	}
-	if err = renderSharedEventDriven(audio); err != nil {
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		select {
+		case <-signalChan:
+			fmt.Println("Interrupted by SIGINT")
+			cancel()
+		}
+	}()
+
+	if err = renderSharedEventDriven(ctx, audio); err != nil {
 		return
 	}
 	fmt.Println("Successfully done")
 	return
 }
 
-func renderSharedEventDriven(audio *WAVEFormat) (err error) {
+func renderSharedEventDriven(ctx context.Context, audio *WAVEFormat) (err error) {
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
@@ -153,7 +166,6 @@ func renderSharedEventDriven(audio *WAVEFormat) (err error) {
 		wfx.CbSize = 0
 	}
 
-	fmt.Printf("%+v\n", wfx)
 	fmt.Println("--------")
 	fmt.Printf("Format: PCM %d bit signed integer\n", wfx.WBitsPerSample)
 	fmt.Printf("Rate: %d Hz\n", wfx.NSamplesPerSec)
@@ -203,14 +215,10 @@ func renderSharedEventDriven(audio *WAVEFormat) (err error) {
 	var padding uint32
 	var availableFrameSize uint32
 
-	ctx, cancel := context.WithCancel(context.Background())
 	errorChan := make(chan error, 1)
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt)
 
 	for {
 		if !isPlaying {
-			cancel()
 			close(errorChan)
 			break
 		}
@@ -218,7 +226,7 @@ func renderSharedEventDriven(audio *WAVEFormat) (err error) {
 			errorChan <- watchEvent(ctx, audioReadyEvent)
 		}()
 		select {
-		case <-signalChan:
+		case <-ctx.Done():
 			isPlaying = false
 			<-errorChan
 			break
@@ -281,7 +289,6 @@ func watchEvent(ctx context.Context, event uintptr) (err error) {
 		close(errorChan)
 		return
 	case <-ctx.Done():
-		fmt.Println("canceled by parent context")
 		err = ctx.Err()
 		return
 	}
