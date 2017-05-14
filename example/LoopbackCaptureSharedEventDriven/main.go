@@ -233,11 +233,16 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	if err = acRender.SetEventHandle(audioReadyEvent); err != nil {
 		return
 	}
+	var bufferFrameSizeRender uint32
+	if err = acRender.GetBufferSize(&bufferFrameSizeRender); err != nil {
+		return
+	}
 
 	var bufferFrameSize uint32
 	if err = acCapture.GetBufferSize(&bufferFrameSize); err != nil {
 		return
 	}
+
 	fmt.Printf("Allocated buffer size: %d\n", bufferFrameSize)
 
 	var arc *wca.IAudioRenderClient
@@ -268,6 +273,9 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 
 	var isCapturing bool = true
 	var currentDuration time.Duration
+	var availableFrameSizeRender uint32
+	var paddingRender uint32
+	var dataRender *byte
 	var data *byte
 	var b *byte
 	var availableFrameSize uint32
@@ -276,6 +284,27 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	var qcpPosition uint64
 
 	errorChan := make(chan error, 1)
+	// Render silence
+	if err = acRender.GetCurrentPadding(&paddingRender); err != nil {
+		return
+	}
+	if availableFrameSizeRender = bufferFrameSizeRender - paddingRender; availableFrameSizeRender == 0 {
+		fmt.Println("oops")
+	}
+	if err = arc.GetBuffer(availableFrameSizeRender, &dataRender); err != nil {
+		return
+	}
+
+	startRender := unsafe.Pointer(dataRender)
+	limRender := int(availableFrameSize) * int(wfx.NBlockAlign)
+
+	for n := 0; n < limRender; n++ {
+		b = (*byte)(unsafe.Pointer(uintptr(startRender) + uintptr(n)))
+		*b = 0 // 0 indicates silence
+	}
+	if err = arc.ReleaseBuffer(availableFrameSizeRender, 0); err != nil {
+		return
+	}
 
 	for {
 		if !isCapturing {
@@ -300,6 +329,31 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 				isCapturing = false
 				break
 			}
+
+			// Render silence
+			if err = acRender.GetCurrentPadding(&paddingRender); err != nil {
+				return
+			}
+			if availableFrameSizeRender = bufferFrameSizeRender - paddingRender; availableFrameSizeRender == 0 {
+				continue
+			}
+			if err = arc.GetBuffer(availableFrameSizeRender, &dataRender); err != nil {
+				return
+			}
+
+			startRender := unsafe.Pointer(dataRender)
+			limRender := int(availableFrameSize) * int(wfx.NBlockAlign)
+
+			for n := 0; n < limRender; n++ {
+				b = (*byte)(unsafe.Pointer(uintptr(startRender) + uintptr(n)))
+				*b = 0 // 0 indicates silence
+			}
+
+			if err = arc.ReleaseBuffer(availableFrameSizeRender, 0); err != nil {
+				return
+			}
+
+			// Capture loopback
 			if err = acc.GetBuffer(&data, &availableFrameSize, &flags, &devicePosition, &qcpPosition); err != nil {
 				return
 			}
