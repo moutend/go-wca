@@ -260,7 +260,6 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	if err = acRender.Start(); err != nil {
 		return
 	}
-	fmt.Println("foo")
 	if err = acCapture.Start(); err != nil {
 		return
 	}
