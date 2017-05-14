@@ -232,8 +232,6 @@ func captureSharedEventDriven(ctx context.Context, duration time.Duration) (audi
 	if duration <= 0 {
 		fmt.Println("Press Ctrl-C to stop capturing")
 	}
-	time.Sleep(capturingPeriod)
-
 	var isCapturing bool = true
 	var currentDuration time.Duration
 	var b *byte
@@ -285,10 +283,7 @@ func captureSharedEventDriven(ctx context.Context, duration time.Duration) (audi
 				audio.RawData = append(audio.RawData, *b)
 			}
 			audio.DataSize += uint32(lim)
-			//if err = ac.GetCurrentPadding(&padding); err != nil {
-			//	return
-			//}
-			//time.Sleep(capturingPeriod)
+
 			if err = acc.ReleaseBuffer(availableFrameSize); err != nil {
 				return
 			}
