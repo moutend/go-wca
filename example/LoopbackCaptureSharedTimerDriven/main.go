@@ -3,6 +3,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"flag"
 	"fmt"
@@ -107,7 +108,21 @@ func run(args []string) (err error) {
 	if filenameFlag.Value == "" {
 		return
 	}
-	if audio, err = loopbackCaptureSharedTimerDriven(durationFlag.Value); err != nil {
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		select {
+		case <-signalChan:
+			fmt.Println("Interrupted by SIGINT")
+			cancel()
+		}
+		return
+	}()
+
+	if audio, err = loopbackCaptureSharedTimerDriven(ctx, durationFlag.Value); err != nil {
 		return
 	}
 	if err = ioutil.WriteFile(filenameFlag.Value, audio.Bytes(), 0644); err != nil {
@@ -117,7 +132,7 @@ func run(args []string) (err error) {
 	return
 }
 
-func loopbackCaptureSharedTimerDriven(duration time.Duration) (audio *WAVEFormat, err error) {
+func loopbackCaptureSharedTimerDriven(ctx context.Context, duration time.Duration) (audio *WAVEFormat, err error) {
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
@@ -144,7 +159,7 @@ func loopbackCaptureSharedTimerDriven(duration time.Duration) (audio *WAVEFormat
 	if err = ps.GetValue(&wca.PKEY_Device_FriendlyName, &pv); err != nil {
 		return
 	}
-	fmt.Printf("Capturing what you hear from: %s\n", pv.String())
+	fmt.Printf("Capturing audio from: %s\n", pv.String())
 
 	var ac *wca.IAudioClient
 	if err = mmd.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &ac); err != nil {
@@ -223,16 +238,12 @@ func loopbackCaptureSharedTimerDriven(duration time.Duration) (audio *WAVEFormat
 	var qcpPosition uint64
 	var padding uint32
 
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt)
-
 	for {
 		if !isCapturing {
 			break
 		}
 		select {
-		case <-signalChan:
-			fmt.Println("Interrupted by SIGINT")
+		case <-ctx.Done():
 			isCapturing = false
 			break
 		default:
