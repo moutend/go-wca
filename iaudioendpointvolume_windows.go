@@ -3,6 +3,7 @@
 package wca
 
 import (
+	"math"
 	"syscall"
 	"unsafe"
 
@@ -31,11 +32,13 @@ func aevGetChannelCount(aev *IAudioEndpointVolume, channelCount *uint32) (err er
 }
 
 func aevSetMasterVolumeLevel(aev *IAudioEndpointVolume, levelDB float32, eventContextGUID *ole.GUID) (err error) {
+	levelDBValue := math.Float32bits(levelDB)
+
 	hr, _, _ := syscall.Syscall(
 		aev.VTable().SetMasterVolumeLevel,
 		3,
 		uintptr(unsafe.Pointer(aev)),
-		uintptr(levelDB),
+		uintptr(levelDBValue),
 		uintptr(unsafe.Pointer(eventContextGUID)))
 	if hr != 0 {
 		err = ole.NewError(hr)
@@ -44,11 +47,13 @@ func aevSetMasterVolumeLevel(aev *IAudioEndpointVolume, levelDB float32, eventCo
 }
 
 func aevSetMasterVolumeLevelScalar(aev *IAudioEndpointVolume, level float32, eventContextGUID *ole.GUID) (err error) {
+	levelValue := math.Float32bits(level)
+
 	hr, _, _ := syscall.Syscall(
 		aev.VTable().SetMasterVolumeLevelScalar,
 		3,
 		uintptr(unsafe.Pointer(aev)),
-		uintptr(level),
+		uintptr(levelValue),
 		uintptr(unsafe.Pointer(eventContextGUID)))
 	if hr != 0 {
 		err = ole.NewError(hr)
@@ -83,12 +88,14 @@ func aevGetMasterVolumeLevelScalar(aev *IAudioEndpointVolume, level *float32) (e
 }
 
 func aevSetChannelVolumeLevel(aev *IAudioEndpointVolume, channel uint32, levelDB float32, eventContextGUID *ole.GUID) (err error) {
+	levelDBValue := math.Float32bits(levelDB)
+
 	hr, _, _ := syscall.Syscall6(
 		aev.VTable().SetChannelVolumeLevel,
 		4,
 		uintptr(unsafe.Pointer(aev)),
 		uintptr(channel),
-		uintptr(levelDB),
+		uintptr(levelDBValue),
 		uintptr(unsafe.Pointer(eventContextGUID)),
 		0,
 		0)
@@ -99,12 +106,14 @@ func aevSetChannelVolumeLevel(aev *IAudioEndpointVolume, channel uint32, levelDB
 }
 
 func aevSetChannelVolumeLevelScalar(aev *IAudioEndpointVolume, channel uint32, level float32, eventContextGUID *ole.GUID) (err error) {
+	levelValue := math.Float32bits(level)
+
 	hr, _, _ := syscall.Syscall6(
 		aev.VTable().SetChannelVolumeLevelScalar,
 		4,
 		uintptr(unsafe.Pointer(aev)),
 		uintptr(channel),
-		uintptr(level),
+		uintptr(levelValue),
 		uintptr(unsafe.Pointer(eventContextGUID)),
 		0,
 		0)
@@ -142,6 +151,7 @@ func aevGetChannelVolumeLevelScalar(aev *IAudioEndpointVolume, channel uint32, l
 
 func aevSetMute(aev *IAudioEndpointVolume, mute bool, eventContextGUID *ole.GUID) (err error) {
 	var muteValue uint32
+
 	if mute {
 		muteValue = 1
 	}
