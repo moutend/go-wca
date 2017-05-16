@@ -105,7 +105,7 @@ func acGetDevicePeriod(ac *IAudioClient, nsDefaultDevicePeriod, nsMinimumDeviceP
 		uintptr(unsafe.Pointer(nsDefaultDevicePeriod)),
 		uintptr(unsafe.Pointer(nsMinimumDevicePeriod)))
 	if hr != 0 {
-		err = NewError(hr)
+		err = ole.NewError(hr)
 	}
 	return
 }
