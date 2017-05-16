@@ -37,16 +37,16 @@ Each APIs in this package correspond to native COM APIs, so that you can refer t
 The following list contains the links to the documentation of native API which is available in this package.
 - MMDevice API
   - [IMMDevice](https://msdn.microsoft.com/en-us/library/windows/desktop/dd371395(v=vs.85).aspx)
-  - [IMMDeviceCollection](https://msdn.microsoft.com/en-us/library/windows/desktop/dd371396(v=vs.85).aspx "IMMDeviceCollection"){#mt779369_VS.85_en-us}
-  - [IMMDeviceEnumerator](https://msdn.microsoft.com/en-us/library/windows/desktop/dd371399(v=vs.85).aspx "IMMDeviceEnumerator"){#mt779370_VS.85_en-us}
-  - [IMMEndpoint](https://msdn.microsoft.com/en-us/library/windows/desktop/dd371414(v=vs.85).aspx "IMMEndpoint"){#mt779371_VS.85_en-us}
+  - [IMMDeviceCollection](https://msdn.microsoft.com/en-us/library/windows/desktop/dd371396(v=vs.85).aspx "IMMDeviceCollection")
+  - [IMMDeviceEnumerator](https://msdn.microsoft.com/en-us/library/windows/desktop/dd371399(v=vs.85).aspx "IMMDeviceEnumerator")
+  - [IMMEndpoint](https://msdn.microsoft.com/en-us/library/windows/desktop/dd371414(v=vs.85).aspx "IMMEndpoint")
 - Windows Audio Session API
-  - [IAudioClient](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370865(v=vs.85).aspx "IAudioClient"){#mt779327_VS.85_en-us}- [IAudioClient2](https://msdn.microsoft.com/en-us/library/windows/desktop/hh404179(v=vs.85).aspx "IAudioClient2"){#mt779328_VS.85_en-us}
-  - [IAudioClient2](https://msdn.microsoft.com/en-us/library/windows/desktop/hh404179(v=vs.85).aspx "IAudioClient2"){#mt779328_VS.85_en-us}
-  - [IAudioClient3](https://msdn.microsoft.com/en-us/library/windows/desktop/dn911487(v=vs.85).aspx "IAudioClient3"){#mt779329_VS.85_en-us}
-  - [IAudioCaptureClient](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370858(v=vs.85).aspx "IAudioCaptureClient"){#mt779325_VS.85_en-us}
-  - [IAudioEndpointVolume](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370892(v=vs.85).aspx "IAudioEndpointVolume"){#mt779337_VS.85_en-us}
-  - [IAudioRenderClient](https://msdn.microsoft.com/en-us/library/windows/desktop/dd368242(v=vs.85).aspx "IAudioRenderClient"){#mt779347_VS.85_en-us}
+  - [IAudioClient](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370865(v=vs.85).aspx "IAudioClient")
+  - [IAudioClient2](https://msdn.microsoft.com/en-us/library/windows/desktop/hh404179(v=vs.85).aspx "IAudioClient2")
+  - [IAudioClient3](https://msdn.microsoft.com/en-us/library/windows/desktop/dn911487(v=vs.85).aspx "IAudioClient3")
+  - [IAudioCaptureClient](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370858(v=vs.85).aspx "IAudioCaptureClient")
+  - [IAudioEndpointVolume](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370892(v=vs.85).aspx "IAudioEndpointVolume")
+  - [IAudioRenderClient](https://msdn.microsoft.com/en-us/library/windows/desktop/dd368242(v=vs.85).aspx "IAudioRenderClient")
 
 ## Contributing
 
