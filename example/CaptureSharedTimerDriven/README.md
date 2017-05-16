@@ -4,7 +4,7 @@ This example shows that the capturing audio with shared timer driven mode.
 
 ## Prerequisites
 
-- Go 1.7 or later
+- Go 1.8.1 or later
 - `go-ole` (https://github.com/go-ole/go-ole)
 
 ## Build the executable

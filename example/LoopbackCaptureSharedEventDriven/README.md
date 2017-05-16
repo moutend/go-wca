@@ -6,7 +6,7 @@ Capturing loopback audio with event driven mode has an issue.
 
 ## Prerequisites
 
-- Go 1.7 or later
+- Go 1.8.1 or later
 - `go-ole` (https://github.com/go-ole/go-ole)
 
 ## Build the executable
