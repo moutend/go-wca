@@ -203,7 +203,7 @@ func loopbackCaptureSharedTimerDriven(ctx context.Context, duration time.Duratio
 	capturingPeriod = time.Duration(int(defaultPeriod) * 100)
 	fmt.Printf("Default capturing period: %d ms\n", capturingPeriod/time.Millisecond)
 
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_LOOPBACK, 200*10000, 0, wfx, nil); err != nil {
+	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_LOOPBACK, 400*10000, 0, wfx, nil); err != nil {
 		return
 	}
 
@@ -272,7 +272,7 @@ func loopbackCaptureSharedTimerDriven(ctx context.Context, duration time.Duratio
 			}
 			//capturingPeriod = time.Duration(1000000 * 1000 * int(bufferFrameSize-padding) / int(wfx.NSamplesPerSec))
 			capturingPeriod = time.Duration(float64(bufferFrameSize-padding) / float64(wfx.NSamplesPerSec) * float64(time.Second))
-			time.Sleep(capturingPeriod / 2)
+			time.Sleep(capturingPeriod / 3)
 			if err = acc.ReleaseBuffer(availableFrameSize); err != nil {
 				return
 			}
