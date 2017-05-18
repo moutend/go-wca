@@ -12,6 +12,9 @@ import (
 	"github.com/moutend/go-wca"
 )
 
+var version = "latest"
+var revision = "latest"
+
 type GainFlag struct {
 	Value float32
 	IsSet bool
@@ -89,6 +92,7 @@ func run(args []string) (err error) {
 	var volumeFlag VolumeFlag
 	var gainFlag GainFlag
 	var muteFlag MuteFlag
+	var versionFlag bool
 
 	f := flag.NewFlagSet(args[0], flag.ExitOnError)
 	f.Var(&volumeFlag, "volume", "Specify volume as a scalar value")
@@ -97,8 +101,13 @@ func run(args []string) (err error) {
 	f.Var(&gainFlag, "g", "Alias of --gain")
 	f.Var(&muteFlag, "mute", "Specify mute state (default is false)")
 	f.Var(&muteFlag, "m", "Alias of --mute")
+	f.BoolVar(&versionFlag, "version", false, "Show version")
 	f.Parse(args[1:])
 
+	if versionFlag {
+		fmt.Printf("%s-%s\n", version, revision)
+		return
+	}
 	if err = endpointVolume(gainFlag, volumeFlag, muteFlag); err != nil {
 		return
 	}

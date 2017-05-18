@@ -20,6 +20,9 @@ import (
 	"github.com/moutend/go-wca"
 )
 
+var version = "latest"
+var revision = "latest"
+
 type WAVEFormat struct {
 	FormatTag      uint16
 	Channels       uint16
@@ -83,13 +86,19 @@ func main() {
 
 func run(args []string) (err error) {
 	var filenameFlag FilenameFlag
+	var versionFlag bool
 	var audio *WAVEFormat
 
 	f := flag.NewFlagSet(args[0], flag.ExitOnError)
 	f.Var(&filenameFlag, "input", "Specify WAVE format audio (e.g. music.wav)")
 	f.Var(&filenameFlag, "i", "Alias of --input")
+	f.BoolVar(&versionFlag, "version", false, "Show version")
 	f.Parse(args[1:])
 
+	if versionFlag {
+		fmt.Printf("%s-%s\n", version, revision)
+		return
+	}
 	if filenameFlag.Value == "" {
 		return
 	}
