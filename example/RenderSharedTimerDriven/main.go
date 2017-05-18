@@ -121,6 +121,7 @@ func renderSharedTimerDriven(ctx context.Context, audio *WAVEFormat) (err error)
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
+	defer ole.CoUninitialize()
 
 	var de *wca.IMMDeviceEnumerator
 	if err = wca.CoCreateInstance(wca.CLSID_MMDeviceEnumerator, 0, wca.CLSCTX_ALL, wca.IID_IMMDeviceEnumerator, &de); err != nil {

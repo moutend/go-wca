@@ -136,6 +136,7 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
+	defer ole.CoUninitialize()
 
 	var mmdCapturee *wca.IMMDeviceEnumerator
 	if err = wca.CoCreateInstance(wca.CLSID_MMDeviceEnumerator, 0, wca.CLSCTX_ALL, wca.IID_IMMDeviceEnumerator, &mmdCapturee); err != nil {
