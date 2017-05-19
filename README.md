@@ -1,10 +1,8 @@
 # go-wca (beta)
 
-[![Go Documentation](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)][godocs]
 [![GitHub release](http://img.shields.io/github/release/moutend/go-wca.svg?style=flat-square)][release]
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
 
-[godocs]: http://godoc.org/github.com/moutend/go-wca
 [release]: https://github.com/moutend/go-wca/releases
 [license]: https://github.com/moutend/go-wca/blob/master/LICENSE
 
@@ -12,14 +10,15 @@ Go bindings for Windows Core Audio API without using cgo.
 
 This package allows you to do:
 
-- Rendering audio with shared timer driven mode
-- Rendering audio with event driven mode
-- Capturing audio with shared timer driven mode
-- Capturing audio with event driven mode
-- Loopback capturing with shared timer mode
-- Loopback capturing with shared event mode
+- Rendering audio with shared timer driven mode.
+- Rendering audio with event driven mode.
+- Capturing audio with shared timer driven mode.
+- Capturing audio with event driven mode.
+- Loopback capturing with shared timer mode.
+- Loopback capturing with shared event mode.
+- Change volume of master or each channels.
 
-If you're not familiar with Windows Core Audio API, [the documentation on MSDN](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370802(v=vs.85).aspx) helps you to learn about shared / exclusive mode audio.
+If you're not familiar with Windows Core Audio API, [the official documentation about Core Audio API on MSDN](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370802(v=vs.85).aspx) helps you to get started.
 
 ## Prerequisites
 
@@ -29,6 +28,14 @@ If you're not familiar with Windows Core Audio API, [the documentation on MSDN](
 ## Examples
 
 You can find the examples in `example` directory. For more information, please read the README.md in each examples.
+
+If you want to build all examples at once, run the command below:
+
+```console
+make VERSION=latest
+```
+
+Then the executables are generated in `bin` directory.
 
 ## Documentation
 
