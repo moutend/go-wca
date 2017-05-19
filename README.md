@@ -27,11 +27,12 @@ If you're not familiar with Windows Core Audio API, [the official documentation 
 
 ## Examples
 
-You can find the examples in `example` directory. For more information, please read the README.md in each examples.
+The examples are located in `example` directory. You can download [executables](https://github.com/moutend/go-wca/releases) or build by yourself. For more information, please read the README.md in each examples.
 
 If you want to build all examples at once, run the command below:
 
 ```console
+mkdir bin
 make VERSION=latest
 ```
 
