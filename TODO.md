@@ -1,3 +1,8 @@
+# Add tests
+
+I test the example executables on my Windows 10 laptop (more precisely, bootcamp with Macbook Air) at the moment.
+I'm looking for CI which targets Windows client apps. For example, Appveyer CI supports only Windows Server and the server edition doesn't support physical audio device.
+
 # Figure out how to handle IMMNotificationClient
 
 iMMNotificationClient is a special interface and we should implement our own.
