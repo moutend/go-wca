@@ -45,7 +45,7 @@ func mmdeGetDevice() (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func mmdeRegisterEndpointNotificationCallback(mmde *IMMDeviceEnumerator, mmnc *IMMNotificationClientVtbl) (err error) {
+func mmdeRegisterEndpointNotificationCallback(mmde *IMMDeviceEnumerator, mmnc *IMMNotificationClient) (err error) {
 	hr, _, _ := syscall.Syscall(
 		mmde.VTable().RegisterEndpointNotificationCallback,
 		2,
