@@ -2,13 +2,9 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/binary"
 	"flag"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -17,22 +13,12 @@ import (
 	"unsafe"
 
 	"github.com/go-ole/go-ole"
+	"github.com/moutend/go-wave"
 	"github.com/moutend/go-wca"
 )
 
 var version = "latest"
 var revision = "latest"
-
-type WAVEFormat struct {
-	FormatTag      uint16
-	Channels       uint16
-	SamplesPerSec  uint32
-	AvgBytesPerSec uint32
-	BlockAlign     uint16
-	BitsPerSample  uint16
-	DataSize       uint32
-	RawData        []byte
-}
 
 type FilenameFlag struct {
 	Value string
@@ -51,32 +37,6 @@ func (f *FilenameFlag) String() string {
 	return f.Value
 }
 
-func readFile(filename string) (audio *WAVEFormat, err error) {
-	var file []byte
-	if file, err = ioutil.ReadFile(filename); err != nil {
-		return
-	}
-
-	audio = &WAVEFormat{}
-	reader := bytes.NewReader(file)
-	binary.Read(io.NewSectionReader(reader, 20, 2), binary.LittleEndian, &audio.FormatTag)
-	binary.Read(io.NewSectionReader(reader, 22, 2), binary.LittleEndian, &audio.Channels)
-	binary.Read(io.NewSectionReader(reader, 24, 4), binary.LittleEndian, &audio.SamplesPerSec)
-	binary.Read(io.NewSectionReader(reader, 28, 4), binary.LittleEndian, &audio.AvgBytesPerSec)
-	binary.Read(io.NewSectionReader(reader, 32, 2), binary.LittleEndian, &audio.BlockAlign)
-	binary.Read(io.NewSectionReader(reader, 34, 2), binary.LittleEndian, &audio.BitsPerSample)
-	binary.Read(io.NewSectionReader(reader, 40, 4), binary.LittleEndian, &audio.DataSize)
-
-	buf := new(bytes.Buffer)
-	io.Copy(buf, io.NewSectionReader(reader, 44, int64(audio.DataSize)))
-	audio.RawData = buf.Bytes()
-
-	if len(audio.RawData) == 0 {
-		err = fmt.Errorf("empty data")
-	}
-	return
-}
-
 func main() {
 	var err error
 	if err = run(os.Args); err != nil {
@@ -87,7 +47,7 @@ func main() {
 func run(args []string) (err error) {
 	var filenameFlag FilenameFlag
 	var versionFlag bool
-	var audio *WAVEFormat
+	var audio *wave.WAVE
 
 	f := flag.NewFlagSet(args[0], flag.ExitOnError)
 	f.Var(&filenameFlag, "input", "Specify WAVE format audio (e.g. music.wav)")
@@ -102,7 +62,7 @@ func run(args []string) (err error) {
 	if filenameFlag.Value == "" {
 		return
 	}
-	if audio, err = readFile(filenameFlag.Value); err != nil {
+	if audio, err = wave.OpenFile(filenameFlag.Value); err != nil {
 		return
 	}
 
@@ -125,7 +85,7 @@ func run(args []string) (err error) {
 	return
 }
 
-func renderSharedEventDriven(ctx context.Context, audio *WAVEFormat) (err error) {
+func renderSharedEventDriven(ctx context.Context, audio *wave.WAVE) (err error) {
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
