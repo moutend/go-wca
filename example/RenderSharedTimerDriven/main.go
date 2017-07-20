@@ -1,10 +1,12 @@
 // +build windows
+
 package main
 
 import (
 	"context"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -13,7 +15,7 @@ import (
 	"unsafe"
 
 	"github.com/go-ole/go-ole"
-	"github.com/moutend/go-wave"
+	"github.com/moutend/go-wav"
 	"github.com/moutend/go-wca"
 )
 
@@ -47,7 +49,8 @@ func main() {
 func run(args []string) (err error) {
 	var filenameFlag FilenameFlag
 	var versionFlag bool
-	var audio *wave.WAVE
+	var audio = &wav.File{}
+	var file []byte
 
 	f := flag.NewFlagSet(args[0], flag.ExitOnError)
 	f.Var(&filenameFlag, "input", "Specify WAVE format audio (e.g. music.wav)")
@@ -62,7 +65,10 @@ func run(args []string) (err error) {
 	if filenameFlag.Value == "" {
 		return
 	}
-	if audio, err = wave.OpenFile(filenameFlag.Value); err != nil {
+	if file, err = ioutil.ReadFile(filenameFlag.Value); err != nil {
+		return
+	}
+	if err = wav.Unmarshal(file, audio); err != nil {
 		return
 	}
 
@@ -86,7 +92,7 @@ func run(args []string) (err error) {
 	return
 }
 
-func renderSharedTimerDriven(ctx context.Context, audio *wave.WAVE) (err error) {
+func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
@@ -128,15 +134,13 @@ func renderSharedTimerDriven(ctx context.Context, audio *wave.WAVE) (err error) 
 	}
 	defer ole.CoTaskMemFree(uintptr(unsafe.Pointer(wfx)))
 
-	if wfx.WFormatTag != wca.WAVE_FORMAT_PCM {
-		wfx.WFormatTag = 1
-		wfx.NSamplesPerSec = audio.SamplesPerSec
-		wfx.WBitsPerSample = audio.BitsPerSample
-		wfx.NChannels = audio.Channels
-		wfx.NBlockAlign = audio.BlockAlign
-		wfx.NAvgBytesPerSec = audio.AvgBytesPerSec
-		wfx.CbSize = 0
-	}
+	wfx.WFormatTag = 1
+	wfx.NSamplesPerSec = uint32(audio.SamplesPerSec())
+	wfx.WBitsPerSample = uint16(audio.BitsPerSample())
+	wfx.NChannels = uint16(audio.Channels())
+	wfx.NBlockAlign = uint16(audio.BlockAlign())
+	wfx.NAvgBytesPerSec = uint32(audio.AvgBytesPerSec())
+	wfx.CbSize = 0
 
 	fmt.Println("--------")
 	fmt.Printf("Format: PCM %d bit signed integer\n", wfx.WBitsPerSample)
@@ -153,7 +157,8 @@ func renderSharedTimerDriven(ctx context.Context, audio *wave.WAVE) (err error) 
 	renderingPeriod = time.Duration(int(defaultPeriod) * 100)
 	fmt.Printf("Default rendering period: %d ms\n", renderingPeriod/time.Millisecond)
 
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, 0, 200*10000, 0, wfx, nil); err != nil {
+	var latency uint32 = 200 // millisecond
+	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, 0, latency*10000, 0, wfx, nil); err != nil {
 		return
 	}
 
@@ -172,11 +177,13 @@ func renderSharedTimerDriven(ctx context.Context, audio *wave.WAVE) (err error) 
 	if err = ac.Start(); err != nil {
 		return
 	}
+
 	fmt.Println("Start rendering audio with shared-timer-driven mode")
 	fmt.Println("Press Ctrl-C to stop rendering")
 
 	time.Sleep(renderingPeriod)
 
+	var input = audio.Bytes()
 	var data *byte
 	var offset int
 	var padding uint32
@@ -193,7 +200,7 @@ func renderSharedTimerDriven(ctx context.Context, audio *wave.WAVE) (err error) 
 			isPlaying = false
 			break
 		default:
-			if offset >= int(audio.DataSize) {
+			if offset >= audio.Length() {
 				isPlaying = false
 				break
 			}
@@ -210,13 +217,13 @@ func renderSharedTimerDriven(ctx context.Context, audio *wave.WAVE) (err error) 
 
 			start := unsafe.Pointer(data)
 			lim := int(availableFrameSize) * int(wfx.NBlockAlign)
-			remaining := int(audio.DataSize) - offset
+			remaining := audio.Length() - offset
 			if remaining < lim {
 				lim = remaining
 			}
 			for n := 0; n < lim; n++ {
 				b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
-				*b = audio.RawData[offset+n]
+				*b = input[offset+n]
 			}
 			offset += lim
 			if err = arc.ReleaseBuffer(availableFrameSize, 0); err != nil {
@@ -225,10 +232,6 @@ func renderSharedTimerDriven(ctx context.Context, audio *wave.WAVE) (err error) 
 			time.Sleep(renderingPeriod)
 		}
 	}
-
-	if err = ac.Stop(); err != nil {
-		return
-	}
-	fmt.Println("Stop rendering loopback audio")
-	return
+	time.Sleep(time.Duration(latency) * time.Millisecond)
+	return ac.Stop()
 }
