@@ -253,7 +253,7 @@ func renderSharedEventDriven(ctx context.Context, audio *wav.File) (err error) {
 		return
 	}
 
-// Render samples remaining in buffer.
+	// Render samples remaining in buffer.
 	time.Sleep(latency)
 
 	return ac.Stop()
@@ -276,13 +276,9 @@ func watchEvent(ctx context.Context, event uintptr) (err error) {
 }
 
 func eventEmitter(event uintptr) (err error) {
-	//if err = ole.CoInitializeEx(0, ole.COINIT_MULTITHREADED); err != nil {
-	//	return
-	//}
 	dw := wca.WaitForSingleObject(event, wca.INFINITE)
 	if dw != 0 {
 		return fmt.Errorf("failed to watch event")
 	}
-	//ole.CoUninitialize()
 	return
 }
