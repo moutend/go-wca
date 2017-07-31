@@ -1,12 +1,13 @@
 // +build windows
+
 package main
 
 import (
 	"bytes"
 	"context"
-	"encoding/binary"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -17,42 +18,12 @@ import (
 	"unsafe"
 
 	"github.com/go-ole/go-ole"
+	"github.com/moutend/go-wav"
 	"github.com/moutend/go-wca"
 )
 
 var version = "latest"
 var revision = "latest"
-
-type WAVEFormat struct {
-	FormatTag      uint16
-	Channels       uint16
-	SamplesPerSec  uint32
-	AvgBytesPerSec uint32
-	BlockAlign     uint16
-	BitsPerSample  uint16
-	DataSize       uint32
-	RawData        []byte
-}
-
-func (v *WAVEFormat) Bytes() (output []byte) {
-	buf := new(bytes.Buffer)
-
-	binary.Write(buf, binary.BigEndian, []byte("RIFF"))
-	binary.Write(buf, binary.LittleEndian, uint32(v.DataSize+36)) // Header size is 44 byte, so 44 - 8 = 36
-	binary.Write(buf, binary.BigEndian, []byte("WAVEfmt "))
-	binary.Write(buf, binary.LittleEndian, uint32(16)) // 16 (0x10000000) for PCM
-	binary.Write(buf, binary.LittleEndian, uint16(1))  // 1 (0x0001) for PCM
-	binary.Write(buf, binary.LittleEndian, v.Channels)
-	binary.Write(buf, binary.LittleEndian, v.SamplesPerSec)
-	binary.Write(buf, binary.LittleEndian, v.AvgBytesPerSec)
-	binary.Write(buf, binary.LittleEndian, v.BlockAlign)
-	binary.Write(buf, binary.LittleEndian, v.BitsPerSample)
-	binary.Write(buf, binary.BigEndian, []byte("data"))
-	binary.Write(buf, binary.LittleEndian, v.DataSize)
-	binary.Write(buf, binary.LittleEndian, v.RawData)
-
-	return buf.Bytes()
-}
 
 type DurationFlag struct {
 	Value time.Duration
@@ -98,9 +69,10 @@ func main() {
 
 func run(args []string) (err error) {
 	var durationFlag DurationFlag
+	var file []byte
 	var filenameFlag FilenameFlag
 	var versionFlag bool
-	var audio *WAVEFormat
+	var audio *wav.File
 
 	f := flag.NewFlagSet(args[0], flag.ExitOnError)
 	f.Var(&durationFlag, "duration", "Specify recording duration in second")
@@ -134,14 +106,17 @@ func run(args []string) (err error) {
 	if audio, err = captureSharedTimerDriven(ctx, durationFlag.Value); err != nil {
 		return
 	}
-	if err = ioutil.WriteFile(filenameFlag.Value, audio.Bytes(), 0644); err != nil {
+	if file, err = wav.Marshal(audio); err != nil {
+		return
+	}
+	if err = ioutil.WriteFile(filenameFlag.Value, file, 0644); err != nil {
 		return
 	}
 	fmt.Println("Successfully done")
 	return
 }
 
-func captureSharedTimerDriven(ctx context.Context, duration time.Duration) (audio *WAVEFormat, err error) {
+func captureSharedTimerDriven(ctx context.Context, duration time.Duration) (audio *wav.File, err error) {
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
@@ -184,35 +159,33 @@ func captureSharedTimerDriven(ctx context.Context, duration time.Duration) (audi
 	defer ole.CoTaskMemFree(uintptr(unsafe.Pointer(wfx)))
 
 	wfx.WFormatTag = 1
-	wfx.WBitsPerSample = 16
-	wfx.NSamplesPerSec = 44100
 	wfx.NBlockAlign = (wfx.WBitsPerSample / 8) * wfx.NChannels
 	wfx.NAvgBytesPerSec = wfx.NSamplesPerSec * uint32(wfx.NBlockAlign)
 	wfx.CbSize = 0
 
-	audio = &WAVEFormat{}
-	audio.Channels = wfx.NChannels
-	audio.SamplesPerSec = wfx.NSamplesPerSec
-	audio.AvgBytesPerSec = wfx.NAvgBytesPerSec
-	audio.BlockAlign = wfx.NBlockAlign
-	audio.BitsPerSample = wfx.WBitsPerSample
+	if audio, err = wav.New(int(wfx.NSamplesPerSec), int(wfx.WBitsPerSample), int(wfx.NChannels)); err != nil {
+		return
+	}
 
 	fmt.Println("--------")
-	fmt.Printf("Format: PCM %d bit signed integer\n", wfx.WBitsPerSample)
+	fmt.Printf("Format: PCM %d bit signed integer\n", int(wfx.WBitsPerSample))
 	fmt.Printf("Rate: %d Hz\n", wfx.NSamplesPerSec)
 	fmt.Printf("Channels: %d\n", wfx.NChannels)
 	fmt.Println("--------")
 
 	var defaultPeriod wca.REFERENCE_TIME
 	var minimumPeriod wca.REFERENCE_TIME
-	var capturingPeriod time.Duration
+	var latency time.Duration
 	if err = ac.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
 	}
-	capturingPeriod = time.Duration(int(defaultPeriod) * 100)
-	fmt.Printf("Default capturing period: %d ms\n", capturingPeriod/time.Millisecond)
+	latency = time.Duration(int(defaultPeriod) * 100)
 
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, 0, wca.REFERENCE_TIME(200*10000), 0, wfx, nil); err != nil {
+	fmt.Println("Default period: ", defaultPeriod)
+	fmt.Println("Minimum period: ", minimumPeriod)
+	fmt.Println("Latency: ", latency)
+
+	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, 0, defaultPeriod, 0, wfx, nil); err != nil {
 		return
 	}
 
@@ -231,12 +204,13 @@ func captureSharedTimerDriven(ctx context.Context, duration time.Duration) (audi
 	if err = ac.Start(); err != nil {
 		return
 	}
-	fmt.Println("Start capturing audio with shared-timer-driven mode")
+	fmt.Println("Start capturing with shared timer driven mode")
 	if duration <= 0 {
 		fmt.Println("Press Ctrl-C to stop capturing")
 	}
-	time.Sleep(capturingPeriod)
 
+	var output = []byte{}
+	var offset int
 	var isCapturing bool = true
 	var currentDuration time.Duration
 	var b *byte
@@ -245,7 +219,8 @@ func captureSharedTimerDriven(ctx context.Context, duration time.Duration) (audi
 	var flags uint32
 	var devicePosition uint64
 	var qcpPosition uint64
-	var padding uint32
+
+	time.Sleep(latency)
 
 	for {
 		if !isCapturing {
@@ -256,13 +231,16 @@ func captureSharedTimerDriven(ctx context.Context, duration time.Duration) (audi
 			isCapturing = false
 			break
 		default:
-			currentDuration = time.Duration(float64(audio.DataSize) / float64(audio.BitsPerSample/8) / float64(audio.Channels) / float64(audio.SamplesPerSec) * float64(time.Second))
+			// Wait for buffering.
+			time.Sleep(latency / 2)
+
+			currentDuration = time.Duration(float64(offset) / float64(wfx.WBitsPerSample/8) / float64(wfx.NChannels) / float64(wfx.NSamplesPerSec) * float64(time.Second))
 			if duration != 0 && currentDuration > duration {
 				isCapturing = false
 				break
 			}
 			if err = acc.GetBuffer(&data, &availableFrameSize, &flags, &devicePosition, &qcpPosition); err != nil {
-				return
+				continue
 			}
 			if availableFrameSize == 0 {
 				continue
@@ -270,21 +248,22 @@ func captureSharedTimerDriven(ctx context.Context, duration time.Duration) (audi
 
 			start := unsafe.Pointer(data)
 			lim := int(availableFrameSize) * int(wfx.NBlockAlign)
+			buf := make([]byte, lim)
 
 			for n := 0; n < lim; n++ {
 				b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
-				audio.RawData = append(audio.RawData, *b)
+				buf[n] = *b
 			}
-			audio.DataSize += uint32(lim)
-			if err = ac.GetCurrentPadding(&padding); err != nil {
-				return
-			}
-			time.Sleep(capturingPeriod)
+			offset += lim
+			output = append(output, buf...)
+
 			if err = acc.ReleaseBuffer(availableFrameSize); err != nil {
 				return
 			}
 		}
 	}
+
+	io.Copy(audio, bytes.NewBuffer(output))
 
 	fmt.Println("Stop capturing")
 	if err = ac.Stop(); err != nil {
