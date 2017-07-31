@@ -203,8 +203,8 @@ func captureSharedTimerDriven(ctx context.Context, duration time.Duration) (audi
 	fmt.Printf("Channels: %d\n", wfx.NChannels)
 	fmt.Println("--------")
 
-	var defaultPeriod int64
-	var minimumPeriod int64
+	var defaultPeriod wca.REFERENCE_TIME
+	var minimumPeriod wca.REFERENCE_TIME
 	var capturingPeriod time.Duration
 	if err = ac.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
@@ -212,7 +212,7 @@ func captureSharedTimerDriven(ctx context.Context, duration time.Duration) (audi
 	capturingPeriod = time.Duration(int(defaultPeriod) * 100)
 	fmt.Printf("Default capturing period: %d ms\n", capturingPeriod/time.Millisecond)
 
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, 0, 200*10000, 0, wfx, nil); err != nil {
+	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, 0, wca.REFERENCE_TIME(200*10000), 0, wfx, nil); err != nil {
 		return
 	}
 

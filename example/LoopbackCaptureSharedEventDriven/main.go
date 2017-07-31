@@ -216,8 +216,8 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	fmt.Printf("Channels: %d\n", wfx.NChannels)
 	fmt.Println("--------")
 
-	var defaultPeriod int64
-	var minimumPeriod int64
+	var defaultPeriod wca.REFERENCE_TIME
+	var minimumPeriod wca.REFERENCE_TIME
 	var capturingPeriod time.Duration
 	if err = acCapture.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
@@ -225,7 +225,7 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	capturingPeriod = time.Duration(int(defaultPeriod) * 100)
 	fmt.Printf("Default capturing period: %d ms\n", capturingPeriod/time.Millisecond)
 
-	if err = acCapture.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK|wca.AUDCLNT_STREAMFLAGS_LOOPBACK, 200*10000, 0, wfx, nil); err != nil {
+	if err = acCapture.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK|wca.AUDCLNT_STREAMFLAGS_LOOPBACK, wca.REFERENCE_TIME(200*10000), 0, wfx, nil); err != nil {
 		return
 	}
 	if err = acRender.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK, 200*10000, 0, wfx, nil); err != nil {

@@ -148,8 +148,8 @@ func renderSharedEventDriven(ctx context.Context, audio *wav.File) (err error) {
 	fmt.Println("--------")
 
 	var latency time.Duration
-	var defaultPeriod int64
-	var minimumPeriod int64
+	var defaultPeriod wca.REFERENCE_TIME
+	var minimumPeriod wca.REFERENCE_TIME
 	if err = ac.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
 	}
@@ -158,7 +158,7 @@ func renderSharedEventDriven(ctx context.Context, audio *wav.File) (err error) {
 	fmt.Println("Default period: ", defaultPeriod)
 	fmt.Println("Minimum period: ", minimumPeriod)
 	fmt.Println("Latency: ", latency)
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_EXCLUSIVE, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK, uint32(minimumPeriod), uint32(minimumPeriod), wfx, nil); err != nil {
+	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_EXCLUSIVE, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK, minimumPeriod, 0, wfx, nil); err != nil {
 		return
 	}
 	audioReadyEvent := wca.CreateEventExA(0, 0, 0, wca.EVENT_MODIFY_STATE|wca.SYNCHRONIZE)

@@ -149,8 +149,8 @@ func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 	fmt.Println("--------")
 
 	var latency time.Duration
-	var defaultPeriod int64
-	var minimumPeriod int64
+	var defaultPeriod wca.REFERENCE_TIME
+	var minimumPeriod wca.REFERENCE_TIME
 	if err = ac.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
 	}
@@ -159,7 +159,7 @@ func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 	fmt.Println("Minimum period: ", minimumPeriod)
 	fmt.Println("Latency: ", latency)
 
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_EXCLUSIVE, 0, uint32(minimumPeriod), 0, wfx, nil); err != nil {
+	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_EXCLUSIVE, 0, minimumPeriod, 0, wfx, nil); err != nil {
 		return
 	}
 
