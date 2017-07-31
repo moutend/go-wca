@@ -150,15 +150,17 @@ func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 
 	var defaultPeriod wca.REFERENCE_TIME
 	var minimumPeriod wca.REFERENCE_TIME
-	var renderingPeriod time.Duration
+	var latency time.Duration
 	if err = ac.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
 	}
-	renderingPeriod = time.Duration(int(defaultPeriod) * 100)
-	fmt.Printf("Default rendering period: %d ms\n", renderingPeriod/time.Millisecond)
+	latency = time.Duration(int(defaultPeriod) * 100)
 
-	var latency uint32 = 200 // millisecond
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, 0, wca.REFERENCE_TIME(latency*10000), 0, wfx, nil); err != nil {
+	fmt.Println("Default period: ", defaultPeriod)
+	fmt.Println("Minimum period: ", minimumPeriod)
+	fmt.Println("Latency: ", latency)
+
+	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, 0, defaultPeriod, 0, wfx, nil); err != nil {
 		return
 	}
 
@@ -180,8 +182,6 @@ func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 
 	fmt.Println("Start rendering audio with shared-timer-driven mode")
 	fmt.Println("Press Ctrl-C to stop rendering")
-
-	time.Sleep(renderingPeriod)
 
 	var input = audio.Bytes()
 	var data *byte
@@ -229,9 +229,11 @@ func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 			if err = arc.ReleaseBuffer(availableFrameSize, 0); err != nil {
 				return
 			}
-			time.Sleep(renderingPeriod)
+			time.Sleep(latency)
 		}
 	}
-	time.Sleep(time.Duration(latency) * time.Millisecond)
+
+	time.Sleep(latency)
+
 	return ac.Stop()
 }
