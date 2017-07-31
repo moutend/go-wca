@@ -6,7 +6,7 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
-func acInitialize(ac *IAudioClient, shareMode, streamFlags, bufferDuration, periodicity uint32, format *WAVEFORMATEX, audioSessionGUID *ole.GUID) (err error) {
+func acInitialize(ac *IAudioClient, shareMode, streamFlags uint32, nsBufferDuration, nsPeriodicity REFERENCE_TIME, format *WAVEFORMATEX, audioSessionGUID *ole.GUID) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
@@ -14,7 +14,7 @@ func acGetBufferSize(ac *IAudioClient, bufferFrameSize *uint32) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func acGetStreamLatency(ac *IAudioClient, nsLatency *int64) (err error) {
+func acGetStreamLatency(ac *IAudioClient, nsLatency *REFERENCE_TIME) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
@@ -30,7 +30,7 @@ func acGetMixFormat(ac *IAudioClient, wfx **WAVEFORMATEX) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func acGetDevicePeriod(ac *IAudioClient, nsDefaultDevicePeriod, nsMinimumDevicePeriod *int64) (err error) {
+func acGetDevicePeriod(ac *IAudioClient, nsDefaultDevicePeriod, nsMinimumDevicePeriod *REFERENCE_TIME) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 

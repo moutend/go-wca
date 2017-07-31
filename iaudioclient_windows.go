@@ -10,15 +10,15 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
-func acInitialize(ac *IAudioClient, shareMode, streamFlags, bufferDuration, periodicity uint32, format *WAVEFORMATEX, audioSessionGUID *ole.GUID) (err error) {
+func acInitialize(ac *IAudioClient, shareMode, streamFlags uint32, nsBufferDuration, nsPeriodicity REFERENCE_TIME, format *WAVEFORMATEX, audioSessionGUID *ole.GUID) (err error) {
 	hr, _, _ := syscall.Syscall9(
 		ac.VTable().Initialize,
 		7,
 		uintptr(unsafe.Pointer(ac)),
 		uintptr(shareMode),
 		uintptr(streamFlags),
-		uintptr(bufferDuration),
-		uintptr(periodicity),
+		uintptr(nsBufferDuration),
+		uintptr(nsPeriodicity),
 		uintptr(unsafe.Pointer(format)),
 		uintptr(unsafe.Pointer(audioSessionGUID)),
 		0,
@@ -42,7 +42,7 @@ func acGetBufferSize(ac *IAudioClient, bufferFrameSize *uint32) (err error) {
 	return
 }
 
-func acGetStreamLatency(ac *IAudioClient, nsLatency *int64) (err error) {
+func acGetStreamLatency(ac *IAudioClient, nsLatency *REFERENCE_TIME) (err error) {
 	hr, _, _ := syscall.Syscall(
 		ac.VTable().GetStreamLatency,
 		2,
@@ -97,7 +97,7 @@ func acGetMixFormat(ac *IAudioClient, wfx **WAVEFORMATEX) (err error) {
 	return
 }
 
-func acGetDevicePeriod(ac *IAudioClient, nsDefaultDevicePeriod, nsMinimumDevicePeriod *int64) (err error) {
+func acGetDevicePeriod(ac *IAudioClient, nsDefaultDevicePeriod, nsMinimumDevicePeriod *REFERENCE_TIME) (err error) {
 	hr, _, _ := syscall.Syscall(
 		ac.VTable().GetDevicePeriod,
 		3,

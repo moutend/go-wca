@@ -30,8 +30,8 @@ func (v *IAudioClient) VTable() *IAudioClientVtbl {
 	return (*IAudioClientVtbl)(unsafe.Pointer(v.RawVTable))
 }
 
-func (v *IAudioClient) Initialize(shareMode, streamFlags, bufferDuration, periodicity uint32, format *WAVEFORMATEX, audioSessionGUID *ole.GUID) (err error) {
-	err = acInitialize(v, shareMode, streamFlags, bufferDuration, periodicity, format, audioSessionGUID)
+func (v *IAudioClient) Initialize(shareMode, streamFlags uint32, nsBufferDuration, nsPeriodicity REFERENCE_TIME, format *WAVEFORMATEX, audioSessionGUID *ole.GUID) (err error) {
+	err = acInitialize(v, shareMode, streamFlags, nsBufferDuration, nsPeriodicity, format, audioSessionGUID)
 	return
 }
 
@@ -40,7 +40,7 @@ func (v *IAudioClient) GetBufferSize(bufferFrameSize *uint32) (err error) {
 	return
 }
 
-func (v *IAudioClient) GetStreamLatency(nsLatency *int64) (err error) {
+func (v *IAudioClient) GetStreamLatency(nsLatency *REFERENCE_TIME) (err error) {
 	err = acGetStreamLatency(v, nsLatency)
 	return
 }
@@ -59,7 +59,7 @@ func (v *IAudioClient) GetMixFormat(wfx **WAVEFORMATEX) (err error) {
 	return
 }
 
-func (v *IAudioClient) GetDevicePeriod(nsDefaultDevicePeriod, nsMinimumDevicePeriod *int64) (err error) {
+func (v *IAudioClient) GetDevicePeriod(nsDefaultDevicePeriod, nsMinimumDevicePeriod *REFERENCE_TIME) (err error) {
 	err = acGetDevicePeriod(v, nsDefaultDevicePeriod, nsMinimumDevicePeriod)
 	return
 }
