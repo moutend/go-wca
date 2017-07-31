@@ -1,4 +1,5 @@
 // +build windows
+
 package main
 
 import (
@@ -148,17 +149,20 @@ func renderSharedEventDriven(ctx context.Context, audio *wav.File) (err error) {
 
 	var defaultPeriod wca.REFERENCE_TIME
 	var minimumPeriod wca.REFERENCE_TIME
-	var renderingPeriod time.Duration
+	var latency time.Duration
 	if err = ac.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
 	}
-	renderingPeriod = time.Duration(defaultPeriod * 100)
-	fmt.Printf("Default rendering period: %d ms\n", renderingPeriod/time.Millisecond)
+	latency = time.Duration(defaultPeriod * 100)
 
-	var latency uint32 = 200 // millisecond
-	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK, wca.REFERENCE_TIME(latency*10000), 0, wfx, nil); err != nil {
+	fmt.Println("Default period: ", defaultPeriod)
+	fmt.Println("Minimum period: ", minimumPeriod)
+	fmt.Println("Latency: ", latency)
+
+	if err = ac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK, defaultPeriod, 0, wfx, nil); err != nil {
 		return
 	}
+
 	audioReadyEvent := wca.CreateEventExA(0, 0, 0, wca.EVENT_MODIFY_STATE|wca.SYNCHRONIZE)
 	defer wca.CloseHandle(audioReadyEvent)
 
@@ -248,7 +252,10 @@ func renderSharedEventDriven(ctx context.Context, audio *wav.File) (err error) {
 	if err != nil {
 		return
 	}
-	time.Sleep(time.Duration(latency) * time.Millisecond)
+
+// Render samples remaining in buffer.
+	time.Sleep(latency)
+
 	return ac.Stop()
 }
 
