@@ -5,7 +5,7 @@ REVISION=$(shell git rev-parse --verify HEAD | cut -c-6)
 all: build-windows-amd64
 
 build-windows-amd64:
-	@for v in EndpointVolume CaptureSharedTimerDriven CaptureSharedEventDriven LoopbackCaptureSharedTimerDriven LoopbackCaptureSharedEventDriven RenderSharedTimerDriven RenderSharedEventDriven ; do \
+	@for v in `ls example`; do \
 	$(MAKE) build DIRNAME=$$v GOOS=windows GOARCH=amd64; \
 	done;
 
