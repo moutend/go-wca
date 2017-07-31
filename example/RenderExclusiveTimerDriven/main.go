@@ -85,14 +85,14 @@ func run(args []string) (err error) {
 		return
 	}()
 
-	if err = renderSharedTimerDriven(ctx, audio); err != nil {
+	if err = renderExclusiveTimerDriven(ctx, audio); err != nil {
 		return
 	}
 	fmt.Println("Successfully done")
 	return
 }
 
-func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
+func renderExclusiveTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}

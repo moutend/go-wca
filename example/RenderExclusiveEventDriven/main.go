@@ -84,14 +84,14 @@ func run(args []string) (err error) {
 		}
 	}()
 
-	if err = renderSharedEventDriven(ctx, audio); err != nil {
+	if err = renderExclusiveEventDriven(ctx, audio); err != nil {
 		return
 	}
 	fmt.Println("Successfully done")
 	return
 }
 
-func renderSharedEventDriven(ctx context.Context, audio *wav.File) (err error) {
+func renderExclusiveEventDriven(ctx context.Context, audio *wav.File) (err error) {
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
@@ -242,7 +242,10 @@ func renderSharedEventDriven(ctx context.Context, audio *wav.File) (err error) {
 	if err != nil {
 		return
 	}
+
+	// Render samples remaining in buffer.
 	time.Sleep(latency)
+
 	return ac.Stop()
 }
 
