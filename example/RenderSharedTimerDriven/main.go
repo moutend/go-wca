@@ -233,6 +233,7 @@ func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 		}
 	}
 
+// Render samples remaining in buffer.
 	time.Sleep(latency)
 
 	return ac.Stop()
