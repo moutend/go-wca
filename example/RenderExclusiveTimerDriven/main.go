@@ -148,13 +148,14 @@ func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 	fmt.Printf("Channels: %d\n", wfx.NChannels)
 	fmt.Println("--------")
 
-	var latency time.Duration
 	var defaultPeriod wca.REFERENCE_TIME
 	var minimumPeriod wca.REFERENCE_TIME
+	var latency time.Duration
 	if err = ac.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
 	}
 	latency = time.Duration(int(minimumPeriod) * 100)
+
 	fmt.Println("Default period: ", defaultPeriod)
 	fmt.Println("Minimum period: ", minimumPeriod)
 	fmt.Println("Latency: ", latency)
@@ -181,8 +182,6 @@ func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 
 	fmt.Println("Start rendering with exclusive timer driven mode")
 	fmt.Println("Press Ctrl-C to quit")
-
-	time.Sleep(latency)
 
 	var input = audio.Bytes()
 	var data *byte
@@ -233,5 +232,9 @@ func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 			time.Sleep(latency)
 		}
 	}
+
+	// Render samples remaining in buffer.
+	time.Sleep(latency)
+
 	return ac.Stop()
 }
