@@ -1,12 +1,13 @@
 // +build windows
+
 package main
 
 import (
 	"bytes"
 	"context"
-	"encoding/binary"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -17,42 +18,12 @@ import (
 	"unsafe"
 
 	"github.com/go-ole/go-ole"
+	"github.com/moutend/go-wav"
 	"github.com/moutend/go-wca"
 )
 
 var version = "latest"
 var revision = "latest"
-
-type WAVEFormat struct {
-	FormatTag      uint16
-	Channels       uint16
-	SamplesPerSec  uint32
-	AvgBytesPerSec uint32
-	BlockAlign     uint16
-	BitsPerSample  uint16
-	DataSize       uint32
-	RawData        []byte
-}
-
-func (v *WAVEFormat) Bytes() (output []byte) {
-	buf := new(bytes.Buffer)
-
-	binary.Write(buf, binary.BigEndian, []byte("RIFF"))
-	binary.Write(buf, binary.LittleEndian, uint32(v.DataSize+36)) // Header size is 44 byte, so 44 - 8 = 36
-	binary.Write(buf, binary.BigEndian, []byte("WAVEfmt "))
-	binary.Write(buf, binary.LittleEndian, uint32(16)) // 16 (0x10000000) for PCM
-	binary.Write(buf, binary.LittleEndian, uint16(1))  // 1 (0x0001) for PCM
-	binary.Write(buf, binary.LittleEndian, v.Channels)
-	binary.Write(buf, binary.LittleEndian, v.SamplesPerSec)
-	binary.Write(buf, binary.LittleEndian, v.AvgBytesPerSec)
-	binary.Write(buf, binary.LittleEndian, v.BlockAlign)
-	binary.Write(buf, binary.LittleEndian, v.BitsPerSample)
-	binary.Write(buf, binary.BigEndian, []byte("data"))
-	binary.Write(buf, binary.LittleEndian, v.DataSize)
-	binary.Write(buf, binary.LittleEndian, v.RawData)
-
-	return buf.Bytes()
-}
 
 type DurationFlag struct {
 	Value time.Duration
@@ -100,7 +71,8 @@ func run(args []string) (err error) {
 	var durationFlag DurationFlag
 	var filenameFlag FilenameFlag
 	var versionFlag bool
-	var audio *WAVEFormat
+	var audio *wav.File
+	var file []byte
 
 	f := flag.NewFlagSet(args[0], flag.ExitOnError)
 	f.Var(&durationFlag, "duration", "Specify recording duration in second")
@@ -134,14 +106,17 @@ func run(args []string) (err error) {
 	if audio, err = loopbackCaptureSharedEventDriven(ctx, durationFlag.Value); err != nil {
 		return
 	}
-	if err = ioutil.WriteFile(filenameFlag.Value, audio.Bytes(), 0644); err != nil {
+	if file, err = wav.Marshal(audio); err != nil {
+		return
+	}
+	if err = ioutil.WriteFile(filenameFlag.Value, file, 0644); err != nil {
 		return
 	}
 	fmt.Println("Successfully done")
 	return
 }
 
-func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duration) (audio *WAVEFormat, err error) {
+func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duration) (audio *wav.File, err error) {
 	if err = ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
@@ -177,38 +152,32 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	}
 	fmt.Printf("Capturing audio from: %s\n", pv.String())
 
-	var acCapture *wca.IAudioClient
-	if err = mmdCapture.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &acCapture); err != nil {
+	var cac *wca.IAudioClient
+	if err = mmdCapture.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &cac); err != nil {
 		return
 	}
-	defer acCapture.Release()
+	defer cac.Release()
 
-	var acRender *wca.IAudioClient
-	if err = mmdRender.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &acRender); err != nil {
+	var rac *wca.IAudioClient
+	if err = mmdRender.Activate(wca.IID_IAudioClient, wca.CLSCTX_ALL, nil, &rac); err != nil {
 		return
 	}
-	defer acRender.Release()
+	defer rac.Release()
 
 	var wfx *wca.WAVEFORMATEX
-	if err = acCapture.GetMixFormat(&wfx); err != nil {
+	if err = rac.GetMixFormat(&wfx); err != nil {
 		return
 	}
 	defer ole.CoTaskMemFree(uintptr(unsafe.Pointer(wfx)))
 
 	wfx.WFormatTag = 1
-	wfx.NChannels = 2
-	wfx.NSamplesPerSec = 44100
-	wfx.WBitsPerSample = 16
 	wfx.NBlockAlign = (wfx.WBitsPerSample / 8) * wfx.NChannels
 	wfx.NAvgBytesPerSec = wfx.NSamplesPerSec * uint32(wfx.NBlockAlign)
 	wfx.CbSize = 0
 
-	audio = &WAVEFormat{}
-	audio.Channels = wfx.NChannels
-	audio.SamplesPerSec = wfx.NSamplesPerSec
-	audio.AvgBytesPerSec = wfx.NAvgBytesPerSec
-	audio.BlockAlign = wfx.NBlockAlign
-	audio.BitsPerSample = wfx.WBitsPerSample
+	if audio, err = wav.New(int(wfx.NSamplesPerSec), int(wfx.WBitsPerSample), int(wfx.NChannels)); err != nil {
+		return
+	}
 
 	fmt.Println("--------")
 	fmt.Printf("Format: PCM %d bit signed integer\n", wfx.WBitsPerSample)
@@ -218,73 +187,81 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 
 	var defaultPeriod wca.REFERENCE_TIME
 	var minimumPeriod wca.REFERENCE_TIME
-	var capturingPeriod time.Duration
-	if err = acCapture.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
+	var latency time.Duration
+	if err = rac.GetDevicePeriod(&defaultPeriod, &minimumPeriod); err != nil {
 		return
 	}
-	capturingPeriod = time.Duration(int(defaultPeriod) * 100)
-	fmt.Printf("Default capturing period: %d ms\n", capturingPeriod/time.Millisecond)
+	latency = time.Duration(int(defaultPeriod) * 100)
 
-	if err = acCapture.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK|wca.AUDCLNT_STREAMFLAGS_LOOPBACK, wca.REFERENCE_TIME(200*10000), 0, wfx, nil); err != nil {
+	fmt.Println("Default period: ", defaultPeriod)
+	fmt.Println("Minimum period: ", minimumPeriod)
+	fmt.Println("Latency: ", latency)
+
+	if err = cac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK|wca.AUDCLNT_STREAMFLAGS_LOOPBACK, defaultPeriod, 0, wfx, nil); err != nil {
 		return
 	}
-	if err = acRender.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK, 200*10000, 0, wfx, nil); err != nil {
+	if err = rac.Initialize(wca.AUDCLNT_SHAREMODE_SHARED, wca.AUDCLNT_STREAMFLAGS_EVENTCALLBACK, defaultPeriod, 0, wfx, nil); err != nil {
+		return
+	}
+
+	fakeAudioReadyEvent := wca.CreateEventExA(0, 0, 0, wca.EVENT_MODIFY_STATE|wca.SYNCHRONIZE)
+	defer wca.CloseHandle(fakeAudioReadyEvent)
+
+	if err = cac.SetEventHandle(fakeAudioReadyEvent); err != nil {
 		return
 	}
 
 	audioReadyEvent := wca.CreateEventExA(0, 0, 0, wca.EVENT_MODIFY_STATE|wca.SYNCHRONIZE)
 	defer wca.CloseHandle(audioReadyEvent)
 
-	fakeAudioReadyEvent := wca.CreateEventExA(0, 0, 0, wca.EVENT_MODIFY_STATE|wca.SYNCHRONIZE)
-	defer wca.CloseHandle(fakeAudioReadyEvent)
-	if err = acCapture.SetEventHandle(fakeAudioReadyEvent); err != nil {
+	if err = rac.SetEventHandle(audioReadyEvent); err != nil {
 		return
 	}
-	if err = acRender.SetEventHandle(audioReadyEvent); err != nil {
-		return
-	}
+
 	var bufferFrameSizeRender uint32
-	if err = acRender.GetBufferSize(&bufferFrameSizeRender); err != nil {
+	if err = rac.GetBufferSize(&bufferFrameSizeRender); err != nil {
 		return
 	}
 
 	var bufferFrameSize uint32
-	if err = acCapture.GetBufferSize(&bufferFrameSize); err != nil {
+	if err = cac.GetBufferSize(&bufferFrameSize); err != nil {
 		return
 	}
 
 	fmt.Printf("Allocated buffer size: %d\n", bufferFrameSize)
 
 	var arc *wca.IAudioRenderClient
-	if err = acRender.GetService(wca.IID_IAudioRenderClient, &arc); err != nil {
+	if err = rac.GetService(wca.IID_IAudioRenderClient, &arc); err != nil {
 		return
 	}
 	defer arc.Release()
 
 	var acc *wca.IAudioCaptureClient
-	if err = acCapture.GetService(wca.IID_IAudioCaptureClient, &acc); err != nil {
+	if err = cac.GetService(wca.IID_IAudioCaptureClient, &acc); err != nil {
 		return
 	}
 	defer acc.Release()
 
-	if err = acRender.Start(); err != nil {
+	if err = rac.Start(); err != nil {
 		return
 	}
-	if err = acCapture.Start(); err != nil {
+	if err = cac.Start(); err != nil {
 		return
 	}
 
-	fmt.Println("Start capturing loopback audio with shared-event-driven mode")
+	fmt.Println("Start loopback capturing with shared event driven mode")
 
 	if duration <= 0 {
-		fmt.Println("Press Ctrl-C to stop capturing")
+		fmt.Println("Press Ctrl-C to save and quit")
 	}
 
+	var output = []byte{}
+	var buf []byte
+	var offset int
+	var lim int
+	var start unsafe.Pointer
 	var isCapturing bool = true
 	var currentDuration time.Duration
-	var availableFrameSizeRender uint32
-	var paddingRender uint32
-	var dataRender *byte
 	var data *byte
 	var b *byte
 	var availableFrameSize uint32
@@ -293,27 +270,8 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 	var qcpPosition uint64
 
 	errorChan := make(chan error, 1)
-	// Render silence
-	if err = acRender.GetCurrentPadding(&paddingRender); err != nil {
-		return
-	}
-	if availableFrameSizeRender = bufferFrameSizeRender - paddingRender; availableFrameSizeRender == 0 {
-		fmt.Println("oops")
-	}
-	if err = arc.GetBuffer(availableFrameSizeRender, &dataRender); err != nil {
-		return
-	}
 
-	startRender := unsafe.Pointer(dataRender)
-	limRender := int(availableFrameSize) * int(wfx.NBlockAlign)
-
-	for n := 0; n < limRender; n++ {
-		b = (*byte)(unsafe.Pointer(uintptr(startRender) + uintptr(n)))
-		*b = 0 // 0 indicates silence
-	}
-	if err = arc.ReleaseBuffer(availableFrameSizeRender, 0); err != nil {
-		return
-	}
+	time.Sleep(latency)
 
 	for {
 		if !isCapturing {
@@ -329,7 +287,7 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 			<-errorChan
 			break
 		case err = <-errorChan:
-			currentDuration = time.Duration(float64(audio.DataSize) / float64(audio.BitsPerSample/8) / float64(audio.Channels) / float64(audio.SamplesPerSec) * float64(time.Second))
+			currentDuration = time.Duration(float64(offset) / float64(wfx.WBitsPerSample/8) / float64(wfx.NChannels) / float64(wfx.NSamplesPerSec) * float64(time.Second))
 			if duration != 0 && currentDuration > duration {
 				isCapturing = false
 				break
@@ -338,46 +296,24 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 				isCapturing = false
 				break
 			}
-
-			// Render silence
-			if err = acRender.GetCurrentPadding(&paddingRender); err != nil {
-				return
-			}
-			if availableFrameSizeRender = bufferFrameSizeRender - paddingRender; availableFrameSizeRender == 0 {
-				continue
-			}
-			if err = arc.GetBuffer(availableFrameSizeRender, &dataRender); err != nil {
-				return
-			}
-
-			startRender := unsafe.Pointer(dataRender)
-			limRender := int(availableFrameSize) * int(wfx.NBlockAlign)
-
-			for n := 0; n < limRender; n++ {
-				b = (*byte)(unsafe.Pointer(uintptr(startRender) + uintptr(n)))
-				*b = 0 // 0 indicates silence
-			}
-
-			if err = arc.ReleaseBuffer(availableFrameSizeRender, 0); err != nil {
-				return
-			}
-
-			// Capture loopback
 			if err = acc.GetBuffer(&data, &availableFrameSize, &flags, &devicePosition, &qcpPosition); err != nil {
-				return
+				continue
 			}
 			if availableFrameSize == 0 {
 				continue
 			}
 
-			start := unsafe.Pointer(data)
-			lim := int(availableFrameSize) * int(wfx.NBlockAlign)
+			start = unsafe.Pointer(data)
+			lim = int(availableFrameSize) * int(wfx.NBlockAlign)
+			buf = make([]byte, lim)
 
 			for n := 0; n < lim; n++ {
 				b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
-				audio.RawData = append(audio.RawData, *b)
+				buf[n] = *b
 			}
-			audio.DataSize += uint32(lim)
+
+			offset += lim
+			output = append(output, buf...)
 
 			if err = acc.ReleaseBuffer(availableFrameSize); err != nil {
 				return
@@ -385,13 +321,16 @@ func loopbackCaptureSharedEventDriven(ctx context.Context, duration time.Duratio
 		}
 	}
 
+	io.Copy(audio, bytes.NewBuffer(output))
+
 	fmt.Println("Stop capturing")
-	if err = acCapture.Stop(); err != nil {
+	if err = cac.Stop(); err != nil {
 		return
 	}
-	if err = acRender.Stop(); err != nil {
+	if err = rac.Stop(); err != nil {
 		return
 	}
+
 	return
 }
 
