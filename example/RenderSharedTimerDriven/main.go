@@ -180,7 +180,7 @@ func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 		return
 	}
 
-	fmt.Println("Start rendering audio with shared-timer-driven mode")
+	fmt.Println("Start rendering with shared timer driven mode")
 	fmt.Println("Press Ctrl-C to stop rendering")
 
 	var input = audio.Bytes()
@@ -205,19 +205,19 @@ func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 				break
 			}
 			if err = ac.GetCurrentPadding(&padding); err != nil {
-				return
+				continue
 			}
-			availableFrameSize = bufferFrameSize - padding
-			if availableFrameSize == 0 {
+			if availableFrameSize = bufferFrameSize - padding; availableFrameSize == 0 {
 				continue
 			}
 			if err = arc.GetBuffer(availableFrameSize, &data); err != nil {
-				return
+				continue
 			}
 
 			start := unsafe.Pointer(data)
 			lim := int(availableFrameSize) * int(wfx.NBlockAlign)
 			remaining := audio.Length() - offset
+
 			if remaining < lim {
 				lim = remaining
 			}
@@ -225,15 +225,17 @@ func renderSharedTimerDriven(ctx context.Context, audio *wav.File) (err error) {
 				b = (*byte)(unsafe.Pointer(uintptr(start) + uintptr(n)))
 				*b = input[offset+n]
 			}
+
 			offset += lim
+
 			if err = arc.ReleaseBuffer(availableFrameSize, 0); err != nil {
 				return
 			}
-			time.Sleep(latency)
+			time.Sleep(latency / 2)
 		}
 	}
 
-// Render samples remaining in buffer.
+	// Render samples remaining in buffer.
 	time.Sleep(latency)
 
 	return ac.Stop()
