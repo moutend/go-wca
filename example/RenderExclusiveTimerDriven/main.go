@@ -205,19 +205,19 @@ func renderExclusiveTimerDriven(ctx context.Context, audio *wav.File) (err error
 				break
 			}
 			if err = ac.GetCurrentPadding(&padding); err != nil {
-				return
+				continue
 			}
-			availableFrameSize = bufferFrameSize - padding
-			if availableFrameSize == 0 {
+			if availableFrameSize = bufferFrameSize - padding; availableFrameSize == 0 {
 				continue
 			}
 			if err = arc.GetBuffer(availableFrameSize, &data); err != nil {
-				return
+				continue
 			}
 
 			start := unsafe.Pointer(data)
 			lim := int(availableFrameSize) * int(wfx.NBlockAlign)
 			remaining := audio.Length() - offset
+
 			if remaining < lim {
 				lim = remaining
 			}
@@ -229,7 +229,7 @@ func renderExclusiveTimerDriven(ctx context.Context, audio *wav.File) (err error
 			if err = arc.ReleaseBuffer(availableFrameSize, 0); err != nil {
 				return
 			}
-			time.Sleep(latency)
+			time.Sleep(latency / 2)
 		}
 	}
 
