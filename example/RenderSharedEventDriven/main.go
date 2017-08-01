@@ -185,7 +185,7 @@ func renderSharedEventDriven(ctx context.Context, audio *wav.File) (err error) {
 	if err = ac.Start(); err != nil {
 		return
 	}
-	fmt.Println("Start rendering audio with shared-event-driven mode")
+	fmt.Println("Start rendering with shared event driven mode")
 	fmt.Println("Press Ctrl-C to stop")
 
 	var input = audio.Bytes()
@@ -221,13 +221,13 @@ func renderSharedEventDriven(ctx context.Context, audio *wav.File) (err error) {
 				break
 			}
 			if err = ac.GetCurrentPadding(&padding); err != nil {
-				return
+				continue
 			}
 			if availableFrameSize = bufferFrameSize - padding; availableFrameSize == 0 {
 				continue
 			}
 			if err = arc.GetBuffer(availableFrameSize, &data); err != nil {
-				return
+				continue
 			}
 
 			start := unsafe.Pointer(data)
