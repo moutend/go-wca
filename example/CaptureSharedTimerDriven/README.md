@@ -4,10 +4,14 @@ This example shows that the capturing audio with shared timer driven mode.
 
 ## Prerequisites
 
-- Go 1.8.1 or later
+- Go 1.8 or later
 - `go-ole` (https://github.com/go-ole/go-ole)
 
-## Build the executable
+## Download
+
+You can download the executable from [Releases page](https://github.com/moutend/go-wca/releases).
+
+## Build
 
 ```shell
 go build
@@ -23,19 +27,13 @@ That's it. Then you'll get `CaptureSharedTimerDriven.exe`. Note that your platfo
 
 Please specify the flag `-o` or `--output` for saving audio file. The `-d` or `--duration` is optional and it indicates recording duration in second. If the recording duration was not specified, it keeps recording until receiving interruption by Ctrl-C.
 
-## Note
-
-This example captures the audio as 44100 Hz / 16 bit wave format audio. The capturing step will be failed when the sample rate and bit depth of system default capturing device is not set as that value.
-
-To avoid this error, please set the system default settings for shared mode recording.
-
-1. Open control panel and select sound.
-1. Select recording tab and open property of the main recording device.
-1. Select the advanced tab, set the default sample rate and bit depth as 44100 Hz / 16 bit.
-1. Apply changes.
-
 ## Contributing
 
-Bug reports and improving the documentation are welcome. (https://github.com/moutend/go-wca/issues)
+1. Fork ([https://github.com/moutend/go-wca/fork](https://github.com/moutend/go-wca/fork))
+1. Create a feature branch
+1. Add changes
+1. Run `go fmt`
+1. Commit your changes
+1. Open a new Pull Request
 
-The Windows Core Audio API was introduced Windows vista, so that the later than that version of Windows could run this example. However, I'm not sure because I've just tested this example on Windows 10 version 1607 at the moment.
+The Windows Core Audio API was introduced Windows vista, so that the later than that version of Windows could run this example. However, I'm not sure because I've just tested this example on Windows 10 version 1607 at the moment. Operation verification including bug report are welcome.

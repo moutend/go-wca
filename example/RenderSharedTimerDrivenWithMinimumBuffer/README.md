@@ -7,7 +7,7 @@ FYI, `IAudioClient3` interface was introduced from Windows 10, which interface a
 ## Prerequisites
 
 - Windows 10
-- Go 1.8.1 or later
+- Go 1.8 or later
 - `go-ole` (https://github.com/go-ole/go-ole)
 
 ## Download
@@ -45,6 +45,11 @@ For example, if you want to play the wave audio file which is extracted from DVD
 
 ## Contributing
 
-Bug reports and improving the documentation are welcome. (https://github.com/moutend/go-wca/issues)
+1. Fork ([https://github.com/moutend/go-wca/fork](https://github.com/moutend/go-wca/fork))
+1. Create a feature branch
+1. Add changes
+1. Run `go fmt`
+1. Commit your changes
+1. Open a new Pull Request
 
-The Windows Core Audio API was introduced Windows vista, so that the later than that version of Windows could run this example. However, I'm not sure because I've just tested this example on Windows 10 version 1607 at the moment.
+The Windows Core Audio API was introduced Windows vista, so that the later than that version of Windows could run this example. However, I'm not sure because I've just tested this example on Windows 10 version 1607 at the moment. Operation verification including bug report are welcome.

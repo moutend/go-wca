@@ -4,10 +4,12 @@ This example shows that the rendering audio with shared event driven mode.
 
 ## Prerequisites
 
-- Go 1.8.1 or later
+- Go 1.8 or later
 - `go-ole` (https://github.com/go-ole/go-ole)
 
-## Build the executable
+## Download
+
+## Build
 
 ```shell
 go build
