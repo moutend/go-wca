@@ -18,13 +18,14 @@ This package allows you to do:
 - Capturing audio with event driven mode.
 - Loopback capturing with shared timer mode.
 - Loopback capturing with shared event mode.
+- Rendering / Capturing with minimum buffer size (Windows 10 only)
 - Change volume of master or each channels.
 
 If you're not familiar with Windows Core Audio API, [the official documentation about Core Audio API on MSDN](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370802(v=vs.85).aspx) helps you to get started.
 
 ## Prerequisites
 
-- Go 1.8.1 or later
+- Go 1.8 or later
 - `go-ole` ([github.com/go-ole/go-ole](https://github.com/go-ole/go-ole))
 
 ## Examples
