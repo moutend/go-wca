@@ -162,3 +162,9 @@ const (
 	AUDCLNT_E_BUFFER_SIZE_NOT_ALIGNED      = 0x019
 	AUDCLNT_E_INVALID_DEVICE_PERIOD        = 0x020
 )
+
+const (
+	AudioSessionStateActive = iota
+	AudioSessionStateInactive
+	AudioSessionStateExpired
+)
