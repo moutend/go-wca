@@ -3,18 +3,19 @@
 package wca
 
 import (
+	"math"
 	"syscall"
 	"unsafe"
-
-	"github.com/go-ole/go-ole"
 )
 
 func savSetMasterVolume(sav *ISimpleAudioVolume, level float32, eventContext *ole.GUID) (err error) {
+	levelValue := math.Float32bits(level)
+
 	hr, _, _ := syscall.Syscall(
 		sav.VTable().SetMasterVolume,
 		3,
 		uintptr(unsafe.Pointer(sav)),
-		uintptr(level),
+		uintptr(levelValue),
 		uintptr(unsafe.Pointer(eventContext)))
 	if hr != 0 {
 		err = ole.NewError(hr)
