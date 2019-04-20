@@ -28,7 +28,7 @@ func ascGetGroupingParam(asc *IAudioSessionControl, retVal *ole.GUID) (err error
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
-func ascSetGroupingParam(override *ole.GUID, eventContext *ole.GUID) (err error) {
+func ascSetGroupingParam(asc *IAudioSessionControl, override *ole.GUID, eventContext *ole.GUID) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
