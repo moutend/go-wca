@@ -20,6 +20,7 @@ This package allows you to do:
 - Loopback capturing with shared event mode.
 - Rendering / Capturing with minimum buffer size (Windows 10 only)
 - Change volume of master or each channels.
+- Change volume of individual applications.
 
 If you're not familiar with Windows Core Audio API, [the official documentation about Core Audio API on MSDN](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370802(v=vs.85).aspx) helps you to get started.
 
@@ -58,6 +59,12 @@ The following list contains the links to the documentation of native API which i
   - [IAudioCaptureClient](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370858(v=vs.85).aspx "IAudioCaptureClient")
   - [IAudioEndpointVolume](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370892(v=vs.85).aspx "IAudioEndpointVolume")
   - [IAudioRenderClient](https://msdn.microsoft.com/en-us/library/windows/desktop/dd368242(v=vs.85).aspx "IAudioRenderClient")
+  - [IAudioSessionManager](https://docs.microsoft.com/en-us/windows/desktop/api/audiopolicy/nn-audiopolicy-iaudiosessionmanager "IAudioSessionManager")
+  - [IAudioSessionManager2](https://docs.microsoft.com/en-us/windows/desktop/api/audiopolicy/nn-audiopolicy-iaudiosessionmanager2 "IAudioSessionManager2")
+  - [IAudioSessionEnumerator](https://docs.microsoft.com/en-us/windows/desktop/api/audiopolicy/nn-audiopolicy-iaudiosessionenumerator "IAudioSessionEnumerator")
+  - [IAudioSessionControl](https://docs.microsoft.com/en-us/windows/desktop/api/audiopolicy/nn-audiopolicy-iaudiosessioncontrol "IAudioSessionControl")
+  - [IAudioSessionControl2](https://docs.microsoft.com/en-us/windows/desktop/api/audiopolicy/nn-audiopolicy-iaudiosessioncontrol2 "IAudioSessionControl2")
+  - [ISimpleAudioVolume](https://docs.microsoft.com/en-us/windows/desktop/api/audioclient/nn-audioclient-isimpleaudiovolume "ISimpleAudioVolume")
 
 ## Contributing
 

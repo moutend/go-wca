@@ -37,7 +37,7 @@ var (
 	IID_IAudioVolumeDuckNotification = ole.NewGUID("{C3B284D4-6D39-4359-B3CF-B56DDB3BB39C}")
 	IID_IAudioSessionNotification    = ole.NewGUID("{641DD20B-4D41-49CC-ABA3-174B9477BB08}")
 	IID_IAudioSessionEnumerator      = ole.NewGUID("{E2F5BB11-0570-40CA-ACDD-3AA01277DEE8}")
-	IID_IAudioSessionManager2        = ole.NewGUID("{77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F")
+	IID_IAudioSessionManager2        = ole.NewGUID("{77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F}")
 
 	// The following IIDs are defined in devicetopology.h.
 	IID_IKsControl              = ole.NewGUID("{28F54685-06FD-11D2-B27A-00A0C9223196}")
