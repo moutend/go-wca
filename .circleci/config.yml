@@ -3,7 +3,7 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.13
-    parallelism: 2
+    parallelism: 1
     environment:
       TEST_RESULTS: /tmp/test-results # path to where test results will be saved
     steps:
