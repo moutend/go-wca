@@ -1,0 +1,4 @@
+github.com/go-ole/go-ole v1.2.4 h1:nNBDSCOigTSiarFpYE9J/KtEA1IOW4CNeqT9TQDqCxI=
+github.com/go-ole/go-ole v1.2.4/go.mod h1:XCwSNxSkXRo4vlyPy93sltvi/qJq0jqQhjqQNIwKuxM=
+github.com/moutend/go-wav v0.0.0-20170820031854-56127fbbb7ba h1:OjLj0dIkgDrGzgLHh2dv2BGtpa8RwCqykn2ThFcOMLc=
+github.com/moutend/go-wav v0.0.0-20170820031854-56127fbbb7ba/go.mod h1:y/Ls9PBADL6vJfbt4gZbNtUS2grnEGnFg4RMsCa5g/4=
