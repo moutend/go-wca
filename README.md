@@ -8,9 +8,9 @@
 [license]: https://github.com/moutend/go-wca/blob/master/LICENSE
 [release]: https://github.com/moutend/go-wca/releases
 
-Go bindings for Windows Core Audio API without using cgo.
+Pure golang bindings for Windows Core Audio API. The `cgo` is not required.
 
-This package allows you to do:
+## Features
 
 - Rendering audio with shared timer driven mode.
 - Rendering audio with event driven mode.
@@ -18,26 +18,26 @@ This package allows you to do:
 - Capturing audio with event driven mode.
 - Loopback capturing with shared timer mode.
 - Loopback capturing with shared event mode.
-- Rendering / Capturing with minimum buffer size (Windows 10 only)
 - Change volume of master or each channels.
 - Change volume of individual applications.
+- Hook audio device events.
 
-If you're not familiar with Windows Core Audio API, [the official documentation about Core Audio API on MSDN](https://msdn.microsoft.com/en-us/library/windows/desktop/dd370802(v=vs.85).aspx) helps you to get started.
+If you're not familiar with Windows Core Audio API, visit the MSDN.
+
+- [Core Audio Interfaces - Win32 apps | Microsoft Docs](https://docs.microsoft.com/en-us/windows/win32/coreaudio/core-audio-interfaces)
 
 ## Prerequisites
 
-- Go 1.8 or later
-- `go-ole` ([github.com/go-ole/go-ole](https://github.com/go-ole/go-ole))
+- Go 1.13 or later
 
-## Examples
+## Usage
 
-The examples are located in `example` directory. You can download [executables](https://github.com/moutend/go-wca/releases) or build by yourself. For more information, please read the README.md in each examples.
+The examples are located in `_example` directory. It helps you to learn how the interfaces can be used.
 
 If you want to build all examples at once, run the command below:
 
 ```console
-mkdir bin
-make VERSION=latest
+make all VERSION=latest
 ```
 
 Then the executables are generated in `bin` directory.
@@ -47,6 +47,7 @@ Then the executables are generated in `bin` directory.
 Each APIs in this package correspond to native COM APIs, so that you can refer the documentation on MSDN as a full documentation of this package.
 
 The following list contains the links to the documentation of native API which is available in this package.
+
 - MMDevice API
   - [IMMDevice](https://msdn.microsoft.com/en-us/library/windows/desktop/dd371395(v=vs.85).aspx)
   - [IMMDeviceCollection](https://msdn.microsoft.com/en-us/library/windows/desktop/dd371396(v=vs.85).aspx "IMMDeviceCollection")
@@ -69,12 +70,16 @@ The following list contains the links to the documentation of native API which i
 ## Contributing
 
 1. Fork ([https://github.com/moutend/go-wca/fork](https://github.com/moutend/go-wca/fork))
-1. Create a feature branch
-1. Add changes
-1. Run `go fmt`
-1. Commit your changes
-1. Open a new Pull Request
+2. Create a feature branch
+3. Add changes
+4. Run `go fmt`
+5. Commit your changes
+6. Open a new Pull Request
 
 ## Author
 
-[Yoshiyuki Koyanagi](https://github.com/moutend)
+[Yoshiyuki Koyanagi <moutend@gmail.com>](https://github.com/moutend)
+
+## LICENSE
+
+MIT
