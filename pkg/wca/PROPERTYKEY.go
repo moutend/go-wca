@@ -4,7 +4,7 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
-type PropertyKey struct {
+type PROPERTYKEY struct {
 	ole.GUID
 	PID uint32
 }
@@ -26,12 +26,12 @@ var (
 	PKEY_AudioEngine_OEMFormat                   = DefinePropertyKey(0xe4870e26, 0x3cc5, 0x4cd2, 0xba, 0x46, 0xca, 0xa, 0x9a, 0x70, 0xed, 0x4, 3)
 )
 
-func DefinePropertyKey(l uint32, w1, w2 uint16, b1, b2, b3, b4, b5, b6, b7, b8 byte, pid uint32) PropertyKey {
+func DefinePropertyKey(l uint32, w1, w2 uint16, b1, b2, b3, b4, b5, b6, b7, b8 byte, pid uint32) PROPERTYKEY {
 	g := ole.GUID{
 		Data1: l,
 		Data2: w1,
 		Data3: w2,
 		Data4: [8]byte{b1, b2, b3, b4, b5, b6, b7, b8},
 	}
-	return PropertyKey{g, pid}
+	return PROPERTYKEY{g, pid}
 }

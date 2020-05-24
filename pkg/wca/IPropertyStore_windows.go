@@ -22,20 +22,20 @@ func psGetCount(ps *IPropertyStore, count *uint32) (err error) {
 	return
 }
 
-func psGetAt(ps *IPropertyStore, index uint32, pk *PropertyKey) (err error) {
+func psGetAt(ps *IPropertyStore, iProp uint32, pkey *PROPERTYKEY) (err error) {
 	hr, _, _ := syscall.Syscall(
 		ps.VTable().GetAt,
 		3,
 		uintptr(unsafe.Pointer(ps)),
-		uintptr(index),
-		uintptr(unsafe.Pointer(pk)))
+		uintptr(iProp),
+		uintptr(unsafe.Pointer(pkey)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
 	return
 }
 
-func psGetValue(ps *IPropertyStore, key *PropertyKey, pv *PROPVARIANT) (err error) {
+func psGetValue(ps *IPropertyStore, key *PROPERTYKEY, pv *PROPVARIANT) (err error) {
 	hr, _, _ := syscall.Syscall(
 		ps.VTable().GetValue,
 		3,

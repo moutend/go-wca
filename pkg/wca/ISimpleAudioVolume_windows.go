@@ -6,8 +6,8 @@ import (
 	"math"
 	"syscall"
 	"unsafe"
-    
-    "github.com/go-ole/go-ole"
+
+	"github.com/go-ole/go-ole"
 )
 
 func savSetMasterVolume(sav *ISimpleAudioVolume, level float32, eventContext *ole.GUID) (err error) {
