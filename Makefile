@@ -5,12 +5,14 @@ REVISION=$(shell git rev-parse --verify HEAD | cut -c-6)
 all: build-windows-amd64
 
 build-windows-amd64:
-	@for v in `ls example`; do \
+	@rm -rf bin && mkdir bin
+	@for v in `ls _example`; do \
 	$(MAKE) build DIRNAME=$$v GOOS=windows GOARCH=amd64; \
 	done;
 
 build-windows-386:
-	@echo not supported at the moment
+	@echo not supported
+	exit 255
 
 build: $(DIRNAME)
 
@@ -19,9 +21,10 @@ ifndef VERSION
 	@echo '[ERROR] $$VERSION must be specified'
 	exit 255
 endif
-	@cd example/$(DIRNAME);\
+	@echo "Building _example/$(DIRNAME)"
+	@cd _example/$(DIRNAME);\
 	go build -ldflags "-X main.revision=$(REVISION) -X main.version=$(VERSION)"
-	@mv example/$(DIRNAME)/$(DIRNAME).exe bin/$(DIRNAME)-$(VERSION)-$(GOARCH).exe
+	@mv _example/$(DIRNAME)/$(DIRNAME).exe bin/$(DIRNAME)-$(VERSION)-$(GOARCH).exe
 
 clean:
 	rm -rf $(RELEASE_DIR)/*
