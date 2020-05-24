@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.13
+    parallelism: 2
+    environment:
+      TEST_RESULTS: /tmp/test-results # path to where test results will be saved
+    steps:
+      - checkout
+      - run:
+          name: Check the examples are able to build
+          command: make all VERSION=latest
+      - save_cache:
+          key: go-mod-v4-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
+workflows:
+  version: 2
+  build-workflow:
+    jobs:
+      - build
