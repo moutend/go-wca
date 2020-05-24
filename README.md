@@ -1,10 +1,10 @@
 # go-wca
 
-[![CircleCI](https://circleci.com/gh/moutend/go-wca/tree/master.svg?style=svg&circle-token=a9f340e1c5288df38bda7d816d38d4189893eafe)][status]
+[![CircleCI](https://circleci.com/gh/moutend/go-wca/tree/develop.svg?style=svg&circle-token=a9f340e1c5288df38bda7d816d38d4189893eafe)][status]
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
 
-[status]: https://circleci.com/gh/moutend/go-wca/tree/master
-[license]: https://github.com/moutend/go-wca/blob/master/LICENSE
+[status]: https://circleci.com/gh/moutend/go-wca/tree/develop
+[license]: https://github.com/moutend/go-wca/blob/develop/LICENSE
 
 Pure golang bindings for Windows Core Audio API. The `cgo` is not required.
 
