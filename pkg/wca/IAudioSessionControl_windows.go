@@ -23,7 +23,7 @@ func ascGetState(asc *IAudioSessionControl, retVal *uint32) (err error) {
 }
 
 func ascGetDisplayName(asc *IAudioSessionControl, retVal *string) (err error) {
-	var retValPtr uint32
+	var retValPtr uint64
 	hr, _, _ := syscall.Syscall(
 		asc.VTable().GetDisplayName,
 		2,
@@ -63,7 +63,7 @@ func ascSetDisplayName(asc *IAudioSessionControl, value *string, eventContext *o
 }
 
 func ascGetIconPath(asc *IAudioSessionControl, retVal *string) (err error) {
-	var retValPtr uint32
+	var retValPtr uint64
 	hr, _, _ := syscall.Syscall(
 		asc.VTable().GetIconPath,
 		2,
