@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package wca
@@ -10,7 +11,7 @@ import (
 )
 
 func asc2GetSessionIdentifier(asc2 *IAudioSessionControl2, retVal *string) (err error) {
-	var retValPtr uint32
+	var retValPtr uintptr
 	hr, _, _ := syscall.Syscall(
 		asc2.VTable().GetSessionIdentifier,
 		2,
@@ -37,7 +38,7 @@ func asc2GetSessionIdentifier(asc2 *IAudioSessionControl2, retVal *string) (err 
 }
 
 func asc2GetSessionInstanceIdentifier(asc2 *IAudioSessionControl2, retVal *string) (err error) {
-	var retValPtr uint32
+	var retValPtr uintptr
 	hr, _, _ := syscall.Syscall(
 		asc2.VTable().GetSessionInstanceIdentifier,
 		2,
