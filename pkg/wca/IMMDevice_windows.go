@@ -41,7 +41,7 @@ func mmdOpenPropertyStore(mmd *IMMDevice, storageMode uint32, ps **IPropertyStor
 }
 
 func mmdGetId(mmd *IMMDevice, strId *string) (err error) {
-	var strIdPtr uint32
+	var strIdPtr uint64
 	hr, _, _ := syscall.Syscall(
 		mmd.VTable().GetId,
 		2,
