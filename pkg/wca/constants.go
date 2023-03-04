@@ -164,7 +164,7 @@ const (
 )
 
 const (
-	AudioSessionStateActive = iota
-	AudioSessionStateInactive
+	AudioSessionStateInactive = iota
+	AudioSessionStateActive
 	AudioSessionStateExpired
 )
