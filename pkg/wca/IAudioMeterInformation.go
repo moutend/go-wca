@@ -13,8 +13,8 @@ type IAudioMeterInformation struct {
 type IAudioMeterInformationVtbl struct {
 	ole.IUnknownVtbl
 	GetPeakValue            uintptr
-	GetChannelsPeakValues   uintptr
 	GetMeteringChannelCount uintptr
+	GetChannelsPeakValues   uintptr
 	QueryHardwareSupport    uintptr
 }
 
