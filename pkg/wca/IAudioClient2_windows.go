@@ -1,5 +1,4 @@
 //go:build windows
-// +build windows
 
 package wca
 
@@ -11,9 +10,8 @@ import (
 )
 
 func ac2IsOffloadCapable(ac2 *IAudioClient2, category uint32, isOffloadCapable *bool) (err error) {
-	hr, _, _ := syscall.Syscall(
+	hr, _, _ := syscall.SyscallN(
 		ac2.VTable().IsOffloadCapable,
-		3,
 		uintptr(unsafe.Pointer(ac2)),
 		uintptr(category),
 		uintptr(unsafe.Pointer(isOffloadCapable)))
@@ -24,12 +22,10 @@ func ac2IsOffloadCapable(ac2 *IAudioClient2, category uint32, isOffloadCapable *
 }
 
 func ac2SetClientProperties(ac2 *IAudioClient2, properties *AudioClientProperties) (err error) {
-	hr, _, _ := syscall.Syscall(
+	hr, _, _ := syscall.SyscallN(
 		ac2.VTable().SetClientProperties,
-		2,
 		uintptr(unsafe.Pointer(ac2)),
-		uintptr(unsafe.Pointer(properties)),
-		0)
+		uintptr(unsafe.Pointer(properties)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
@@ -42,15 +38,13 @@ func ac2GetBufferSizeLimits(ac2 *IAudioClient2, wfx *WAVEFORMATEX, isEventDriven
 	if isEventDriven {
 		isEventDrivenValue = 1
 	}
-	hr, _, _ := syscall.Syscall6(
+	hr, _, _ := syscall.SyscallN(
 		ac2.VTable().GetBufferSizeLimits,
-		5,
 		uintptr(unsafe.Pointer(ac2)),
 		uintptr(unsafe.Pointer(wfx)),
 		uintptr(isEventDrivenValue),
 		uintptr(unsafe.Pointer(minBufferDuration)),
-		uintptr(unsafe.Pointer(maxBufferDuration)),
-		0)
+		uintptr(unsafe.Pointer(maxBufferDuration)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}

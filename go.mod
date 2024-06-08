@@ -1,5 +1,5 @@
-module github.com/moutend/go-wca
+module github.com/cruffinoni/go-wca
 
-go 1.13
+go 1.17
 
-require github.com/go-ole/go-ole v1.2.6
+require github.com/go-ole/go-ole v1.3.0

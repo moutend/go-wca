@@ -7,8 +7,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/cruffinoni/go-wca/pkg/wca"
 	"github.com/go-ole/go-ole"
-	"github.com/moutend/go-wca/pkg/wca"
 )
 
 var version = "latest"
@@ -31,7 +31,7 @@ func (f *GainFlag) Set(value string) (err error) {
 	f.IsSet = true
 	return
 }
-func (f GainFlag) String() string {
+func (f *GainFlag) String() string {
 	return fmt.Sprintf("%v", f.Value)
 }
 

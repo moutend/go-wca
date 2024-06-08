@@ -1,5 +1,4 @@
 //go:build windows
-// +build windows
 
 package wca
 
@@ -11,12 +10,10 @@ import (
 )
 
 func amiGetPeakValue(ami *IAudioMeterInformation, peak *float32) (err error) {
-	hr, _, _ := syscall.Syscall(
+	hr, _, _ := syscall.SyscallN(
 		ami.VTable().GetPeakValue,
-		2,
 		uintptr(unsafe.Pointer(ami)),
-		uintptr(unsafe.Pointer(peak)),
-		0)
+		uintptr(unsafe.Pointer(peak)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
@@ -25,8 +22,7 @@ func amiGetPeakValue(ami *IAudioMeterInformation, peak *float32) (err error) {
 }
 
 func amiGetChannelsPeakValues(ami *IAudioMeterInformation, count uint32, peaks []float32) (err error) {
-	hr, _, _ := syscall.Syscall(ami.VTable().GetChannelsPeakValues,
-		3,
+	hr, _, _ := syscall.SyscallN(ami.VTable().GetChannelsPeakValues,
 		uintptr(unsafe.Pointer(ami)),
 		uintptr(count),
 		uintptr(unsafe.Pointer(&peaks[0])))
@@ -37,12 +33,10 @@ func amiGetChannelsPeakValues(ami *IAudioMeterInformation, count uint32, peaks [
 }
 
 func amiGetMeteringChannelCount(ami *IAudioMeterInformation, count *uint32) (err error) {
-	hr, _, _ := syscall.Syscall(
+	hr, _, _ := syscall.SyscallN(
 		ami.VTable().GetMeteringChannelCount,
-		2,
 		uintptr(unsafe.Pointer(ami)),
-		uintptr(unsafe.Pointer(count)),
-		0)
+		uintptr(unsafe.Pointer(count)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
@@ -50,12 +44,10 @@ func amiGetMeteringChannelCount(ami *IAudioMeterInformation, count *uint32) (err
 }
 
 func amiQueryHardwareSupport(ami *IAudioMeterInformation, response *uint32) (err error) {
-	hr, _, _ := syscall.Syscall(
+	hr, _, _ := syscall.SyscallN(
 		ami.VTable().GetMeteringChannelCount,
-		2,
 		uintptr(unsafe.Pointer(ami)),
-		uintptr(unsafe.Pointer(response)),
-		0)
+		uintptr(unsafe.Pointer(response)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}

@@ -4,7 +4,7 @@ This example shows that changing volume for default rendering device.
 
 ## Prerequisites
 
-- Go 1.13 or later
+- Go 1.17 or later
 
 ## Build
 

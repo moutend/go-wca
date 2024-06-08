@@ -24,7 +24,7 @@ If you're not familiar with Windows Core Audio API, visit the MSDN.
 
 ## Prerequisites
 
-- Go 1.13 or later
+- Go 1.17 or later
 
 ## Usage
 

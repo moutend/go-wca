@@ -1,5 +1,4 @@
 //go:build windows
-// +build windows
 
 package wca
 
@@ -11,12 +10,10 @@ import (
 )
 
 func mmeGetDataFlow(mme *IMMEndpoint, eDataFlow *uint32) (err error) {
-	hr, _, _ := syscall.Syscall(
+	hr, _, _ := syscall.SyscallN(
 		mme.VTable().GetDataFlow,
-		2,
 		uintptr(unsafe.Pointer(mme)),
-		uintptr(unsafe.Pointer(eDataFlow)),
-		0)
+		uintptr(unsafe.Pointer(eDataFlow)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}

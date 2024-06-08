@@ -35,6 +35,11 @@ func (v *IAudioClient) Initialize(shareMode, streamFlags uint32, nsBufferDuratio
 	return
 }
 
+func (v *IAudioClient) InitializeWithFormatEx(shareMode, streamFlags uint32, nsBufferDuration, nsPeriodicity REFERENCE_TIME, format *WAVEFORMATEXTENSIBLE, audioSessionGUID *ole.GUID) (err error) {
+	err = acInitializeEx(v, shareMode, streamFlags, nsBufferDuration, nsPeriodicity, format, audioSessionGUID)
+	return
+}
+
 func (v *IAudioClient) GetBufferSize(bufferFrameSize *uint32) (err error) {
 	err = acGetBufferSize(v, bufferFrameSize)
 	return
@@ -56,6 +61,11 @@ func (v *IAudioClient) IsFormatSupported(shareMode uint32, wfx *WAVEFORMATEX, wf
 }
 func (v *IAudioClient) GetMixFormat(wfx **WAVEFORMATEX) (err error) {
 	err = acGetMixFormat(v, wfx)
+	return
+}
+
+func (v *IAudioClient) GetMixFormatEx(wfe **WAVEFORMATEXTENSIBLE) (err error) {
+	err = acGetMixFormatEx(v, wfe)
 	return
 }
 

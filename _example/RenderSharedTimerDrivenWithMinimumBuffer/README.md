@@ -6,7 +6,7 @@ FYI, `IAudioClient3` interface was introduced from Windows 10, which interface a
 
 ## Prerequisites
 
-- Go 1.13 or later
+- Go 1.17 or later
 - Windows 10 v1607 or later
 
 ## Build

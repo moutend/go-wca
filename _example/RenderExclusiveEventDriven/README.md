@@ -4,7 +4,7 @@ This example shows that the rendering audio with exclusive event driven mode.
 
 ## Prerequisites
 
-- Go 1.13 or later
+- Go 1.17 or later
 
 ## Build
 

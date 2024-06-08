@@ -4,7 +4,7 @@ This example shows that the loopback (a.k.a. what you hear) capturing with share
 
 ## Prerequisites
 
-- Go 1.13 or later
+- Go 1.17 or later
 
 ## Build
 

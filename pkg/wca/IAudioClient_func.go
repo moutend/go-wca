@@ -1,5 +1,4 @@
 //go:build !windows
-// +build !windows
 
 package wca
 
@@ -8,6 +7,10 @@ import (
 )
 
 func acInitialize(ac *IAudioClient, shareMode, streamFlags uint32, nsBufferDuration, nsPeriodicity REFERENCE_TIME, format *WAVEFORMATEX, audioSessionGUID *ole.GUID) (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
+
+func acInitializeEx(ac *IAudioClient, shareMode, streamFlags uint32, nsBufferDuration, nsPeriodicity REFERENCE_TIME, format *WAVEFORMATEXTENSIBLE, audioSessionGUID *ole.GUID) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 
@@ -28,6 +31,10 @@ func acIsFormatSupported(ac *IAudioClient, shareMode uint32, wfx *WAVEFORMATEX, 
 }
 
 func acGetMixFormat(ac *IAudioClient, wfx **WAVEFORMATEX) (err error) {
+	return ole.NewError(ole.E_NOTIMPL)
+}
+
+func acGetMixFormatEx(ac *IAudioClient, wfe **WAVEFORMATEXTENSIBLE) (err error) {
 	return ole.NewError(ole.E_NOTIMPL)
 }
 

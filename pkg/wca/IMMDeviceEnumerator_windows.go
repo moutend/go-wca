@@ -1,5 +1,4 @@
 //go:build windows
-// +build windows
 
 package wca
 
@@ -11,15 +10,12 @@ import (
 )
 
 func mmdeEnumAudioEndpoints(mmde *IMMDeviceEnumerator, eDataFlow, stateMask uint32, dc **IMMDeviceCollection) (err error) {
-	hr, _, _ := syscall.Syscall6(
+	hr, _, _ := syscall.SyscallN(
 		mmde.VTable().EnumAudioEndpoints,
-		4,
 		uintptr(unsafe.Pointer(mmde)),
 		uintptr(eDataFlow), //uintptr(unsafe.Pointer(&eDataFlow)),
 		uintptr(stateMask), //uintptr(unsafe.Pointer(&stateMask)),
-		uintptr(unsafe.Pointer(dc)),
-		0,
-		0)
+		uintptr(unsafe.Pointer(dc)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
@@ -27,15 +23,12 @@ func mmdeEnumAudioEndpoints(mmde *IMMDeviceEnumerator, eDataFlow, stateMask uint
 }
 
 func mmdeGetDefaultAudioEndpoint(mmde *IMMDeviceEnumerator, eDataFlow, stateMask uint32, mmd **IMMDevice) (err error) {
-	hr, _, _ := syscall.Syscall6(
+	hr, _, _ := syscall.SyscallN(
 		mmde.VTable().GetDefaultAudioEndpoint,
-		4,
 		uintptr(unsafe.Pointer(mmde)),
 		uintptr(eDataFlow),
 		uintptr(stateMask),
-		uintptr(unsafe.Pointer(mmd)),
-		0,
-		0)
+		uintptr(unsafe.Pointer(mmd)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
@@ -47,12 +40,10 @@ func mmdeGetDevice() (err error) {
 }
 
 func mmdeRegisterEndpointNotificationCallback(mmde *IMMDeviceEnumerator, mmnc *IMMNotificationClient) (err error) {
-	hr, _, _ := syscall.Syscall(
+	hr, _, _ := syscall.SyscallN(
 		mmde.VTable().RegisterEndpointNotificationCallback,
-		2,
 		uintptr(unsafe.Pointer(mmde)),
-		uintptr(unsafe.Pointer(mmnc)),
-		0)
+		uintptr(unsafe.Pointer(mmnc)))
 	if hr != 0 {
 		err = ole.NewError(hr)
 	}
