@@ -51,6 +51,7 @@ func mmdGetId(mmd *IMMDevice, strId *string) (err error) {
 		0)
 	if hr != 0 {
 		err = ole.NewError(hr)
+		return
 	}
 	// According to the MSDN document, an endpoint ID string is a null-terminated wide-character string.
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/dd370837(v=vs.85).aspx

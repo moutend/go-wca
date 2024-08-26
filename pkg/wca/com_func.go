@@ -7,8 +7,8 @@ import (
 	"github.com/go-ole/go-ole"
 )
 
-func CreateEventExA(securityAttributes, name, flag, desiredAccess uint32) (err error) {
-	return ole.NewError(ole.E_NOTIMPL)
+func CreateEventExA(securityAttributes, name, flag, desiredAccess uint32) (handle uintptr) {
+	return 0
 }
 
 func CloseHandle(hObject uintptr) (err error) {

@@ -1,30 +1,21 @@
-RELEASE_DIR=bin
-REVISION=$(shell git rev-parse --verify HEAD | cut -c-6)
+RELEASE_DIR := bin
+REVISION    := $(shell git rev-parse --verify HEAD | cut -c-6)
+VERSION     ?= latest
 
-.PHONY: clean build build-amd64-windows $(DIRNAME) all
-all: build-windows-amd64
+export GOOS   := windows
+export GOARCH := amd64
 
-build-windows-amd64:
-	@rm -rf bin && mkdir bin
-	@for v in `ls _example`; do \
-	$(MAKE) build DIRNAME=$$v GOOS=windows GOARCH=amd64; \
-	done;
+examples := $(wildcard example/*)
+bins     := $(patsubst example/%,$(RELEASE_DIR)/%.exe,$(examples))
 
-build-windows-386:
-	@echo not supported
-	exit 255
+all: $(RELEASE_DIR) $(bins)
 
-build: $(DIRNAME)
+$(RELEASE_DIR)/%.exe: $(wildcard example/$*)
+	go build -o "$@" -ldflags "-X main.revision=$(REVISION) -X main.version=$(VERSION)" github.com/moutend/go-wca/example/$*
 
-$(DIRNAME):
-ifndef VERSION
-	@echo '[ERROR] $$VERSION must be specified'
-	exit 255
-endif
-	@echo "Building _example/$(DIRNAME)"
-	@cd _example/$(DIRNAME);\
-	go build -ldflags "-X main.revision=$(REVISION) -X main.version=$(VERSION)"
-	@mv _example/$(DIRNAME)/$(DIRNAME).exe bin/$(DIRNAME)-$(VERSION)-$(GOARCH).exe
+$(RELEASE_DIR):
+	mkdir $(RELEASE_DIR)
 
 clean:
-	rm -rf $(RELEASE_DIR)/*
+	rm -rf $(RELEASE_DIR)
+.PHONY: clean

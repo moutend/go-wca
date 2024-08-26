@@ -20,3 +20,18 @@ type EDataFlow uint64
 //
 // https://docs.microsoft.com/en-us/windows/win32/directshow/reference-time
 type REFERENCE_TIME int64
+
+// AudioSessionDisconnectReason represents AudioSessionDisconnectReason enumeration.
+//
+// For more details, visit the MSDN.
+//
+// https://learn.microsoft.com/en-us/windows/win32/api/audiopolicy/nf-audiopolicy-iaudiosessionevents-onsessiondisconnected
+type AudioSessionDisconnectReason int64
+
+// AudioSessionState represents AudioSessionState enumeration.
+//
+// For more details, visit the MSDN.
+//
+// https://learn.microsoft.com/en-us/windows/win32/api/audiopolicy/nf-audiopolicy-iaudiosessionevents-onstatechanged
+// https://learn.microsoft.com/en-us/windows/win32/api/audiosessiontypes/ne-audiosessiontypes-audiosessionstate
+type AudioSessionState int64

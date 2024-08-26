@@ -33,6 +33,7 @@ func ascGetDisplayName(asc *IAudioSessionControl, retVal *string) (err error) {
 		0)
 	if hr != 0 {
 		err = ole.NewError(hr)
+		return
 	}
 	var us []uint16
 	var i uint32
@@ -73,6 +74,7 @@ func ascGetIconPath(asc *IAudioSessionControl, retVal *string) (err error) {
 		0)
 	if hr != 0 {
 		err = ole.NewError(hr)
+		return
 	}
 	var us []uint16
 	var i uint32

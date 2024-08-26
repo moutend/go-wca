@@ -81,7 +81,7 @@ func onDeviceRemoved(pwstrDeviceId string) error {
 	return nil
 }
 
-func onDeviceStateChanged(pwstrDeviceId string, dwNewState uint64) error {
+func onDeviceStateChanged(pwstrDeviceId string, dwNewState uint32) error {
 	fmt.Printf("Called OnDeviceStateChanged\t(%q, %v)\n", pwstrDeviceId, dwNewState)
 
 	return nil

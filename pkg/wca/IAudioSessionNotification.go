@@ -1,12 +1,19 @@
 package wca
 
+import "github.com/go-ole/go-ole"
+
+type IAudioSessionNotificationCallback struct {
+	OnSessionCreated func(pNewSession *IAudioSessionControl) error
+}
+
 type IAudioSessionNotification struct {
-	VTable *IAudioSessionEventsVtbl
+	vTable   *IAudioSessionNotificationVtbl
+	refCount int
+	callback IAudioSessionNotificationCallback
 }
 
 type IAudioSessionNotificationVtbl struct {
-	QueryInterface   uintptr
-	AddRef           uintptr
-	Release          uintptr
+	ole.IUnknownVtbl
+
 	OnSessionCreated uintptr
 }

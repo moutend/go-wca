@@ -28,12 +28,12 @@ If you're not familiar with Windows Core Audio API, visit the MSDN.
 
 ## Usage
 
-The examples are located in `_example` directory. It helps you to learn how the interfaces can be used.
+The examples are located in `example` directory. It helps you to learn how the interfaces can be used.
 
 If you want to build all examples at once, run the command below:
 
 ```console
-make all VERSION=latest
+make
 ```
 
 Then the executables are generated in `bin` directory.
@@ -61,6 +61,7 @@ The following list contains the links to the documentation of native API which i
   - [IAudioSessionEnumerator](https://docs.microsoft.com/en-us/windows/desktop/api/audiopolicy/nn-audiopolicy-iaudiosessionenumerator "IAudioSessionEnumerator")
   - [IAudioSessionControl](https://docs.microsoft.com/en-us/windows/desktop/api/audiopolicy/nn-audiopolicy-iaudiosessioncontrol "IAudioSessionControl")
   - [IAudioSessionControl2](https://docs.microsoft.com/en-us/windows/desktop/api/audiopolicy/nn-audiopolicy-iaudiosessioncontrol2 "IAudioSessionControl2")
+  - [IAudioSessionNotification](https://docs.microsoft.com/en-us/windows/win32/api/audiopolicy/nn-audiopolicy-iaudiosessionnotification "IAudioSessionNotification")
   - [ISimpleAudioVolume](https://docs.microsoft.com/en-us/windows/desktop/api/audioclient/nn-audioclient-isimpleaudiovolume "ISimpleAudioVolume")
   - [IAudioMeterInformation](https://docs.microsoft.com/en-us/windows/win32/api/endpointvolume/nn-endpointvolume-iaudiometerinformation "IAudioMeterInformation")
 
