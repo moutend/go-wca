@@ -11,15 +11,21 @@ import (
 )
 
 func ac2IsOffloadCapable(ac2 *IAudioClient2, category uint32, isOffloadCapable *bool) (err error) {
+	// The COM method writes a 4-byte BOOL. Receiving it directly into Go's
+	// 1-byte bool overwrites the 3 adjacent bytes of the caller's memory,
+	// so read into an int32 and convert.
+	var capableValue int32
 	hr, _, _ := syscall.Syscall(
 		ac2.VTable().IsOffloadCapable,
 		3,
 		uintptr(unsafe.Pointer(ac2)),
 		uintptr(category),
-		uintptr(unsafe.Pointer(isOffloadCapable)))
+		uintptr(unsafe.Pointer(&capableValue)))
 	if hr != 0 {
 		err = ole.NewError(hr)
+		return
 	}
+	*isOffloadCapable = capableValue != 0
 	return
 }
 

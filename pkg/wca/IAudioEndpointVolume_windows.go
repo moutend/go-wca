@@ -169,15 +169,21 @@ func aevSetMute(aev *IAudioEndpointVolume, mute bool, eventContextGUID *ole.GUID
 }
 
 func aevGetMute(aev *IAudioEndpointVolume, mute *bool) (err error) {
+	// The COM method writes a 4-byte BOOL. Receiving it directly into Go's
+	// 1-byte bool overwrites the 3 adjacent bytes of the caller's memory,
+	// so read into an int32 and convert.
+	var muteValue int32
 	hr, _, _ := syscall.Syscall(
 		aev.VTable().GetMute,
 		2,
 		uintptr(unsafe.Pointer(aev)),
-		uintptr(unsafe.Pointer(mute)),
+		uintptr(unsafe.Pointer(&muteValue)),
 		0)
 	if hr != 0 {
 		err = ole.NewError(hr)
+		return
 	}
+	*mute = muteValue != 0
 	return
 }
 
