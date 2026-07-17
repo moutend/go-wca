@@ -58,14 +58,20 @@ func savSetMute(sav *ISimpleAudioVolume, mute bool, eventContext *ole.GUID) (err
 }
 
 func savGetMute(sav *ISimpleAudioVolume, mute *bool) (err error) {
+	// The COM method writes a 4-byte BOOL. Receiving it directly into Go's
+	// 1-byte bool overwrites the 3 adjacent bytes of the caller's memory,
+	// so read into an int32 and convert.
+	var muteValue int32
 	hr, _, _ := syscall.Syscall(
 		sav.VTable().GetMute,
 		2,
 		uintptr(unsafe.Pointer(sav)),
-		uintptr(unsafe.Pointer(mute)),
+		uintptr(unsafe.Pointer(&muteValue)),
 		0)
 	if hr != 0 {
 		err = ole.NewError(hr)
+		return
 	}
+	*mute = muteValue != 0
 	return
 }
